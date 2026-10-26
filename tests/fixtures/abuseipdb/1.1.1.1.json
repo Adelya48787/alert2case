@@ -1,0 +1,1 @@
+{"data":{"ipAddress":"1.1.1.1","isPublic":true,"ipVersion":4,"isWhitelisted":true,"abuseConfidenceScore":0,"countryCode":"AU","usageType":"Content Delivery Network","isp":"APNIC and Cloudflare DNS Resolver project","domain":"cloudflare.com","hostnames":["one.one.one.one"],"isTor":false,"totalReports":171,"numDistinctUsers":54,"lastReportedAt":"2026-10-26T07:41:51+00:00"}}
