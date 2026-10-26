@@ -1,0 +1,2 @@
+{ "recommendations": ["ms-python.python", "charliermarsh.ruff",
+  "redhat.vscode-yaml", "ms-azuretools.vscode-docker", "editorconfig.editorconfig"] }

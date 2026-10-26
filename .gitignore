@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- alert2case ---
+.env
+.env.*
+!.env.example
+.timer_state.json
+*.log
