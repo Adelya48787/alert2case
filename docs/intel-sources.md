@@ -118,17 +118,44 @@ API keys must never be stored in this document or committed to GitHub.
 | AbuseIPDB | GET /check?ipAddress=8.8.8.8 | HTTP 200 |
 | AlienVault OTX | GET /indicators/IPv4/8.8.8.8/general | HTTP 200 |
 
-## 6. Remaining Work
-
-- Collect and sanitize at least 8 JSON fixtures.
-- Include a VirusTotal HTTP 404 fixture.
-- Verify API limits against provider documentation.
-- Move this document into the project's docs/ directory when the shared repository is available.
-- Create a pull request for review.
-
-## 7. Security Rules
+## 6. Security Rules
 
 - Never commit API keys.
 - Never share API keys in screenshots.
 - Store secrets in a gitignored .env file when the repository is ready.
 - Remove sensitive information from fixtures before committing.
+
+## 7. API Quotas and Rate Limits
+
+### VirusTotal Public API
+- 4 requests per minute
+- 500 requests per day
+- HTTP 429 when rate limited
+- Actual account quotas must be checked before production use.
+
+### AbuseIPDB Free API
+- 1,000 IP check requests per day
+- Current limits and remaining quota can be inspected through API response headers.
+
+### AlienVault OTX
+- Account-specific rate limits require verification.
+
+## 8. Quota Planning
+
+The following values are estimates, not measured pipeline results.
+
+- Scenario: 36 alerts
+- Assumed lookup workload: 150–200 API requests
+- VirusTotal rate: 4 requests per minute
+- Estimated VirusTotal-only processing time: 37.5–50 minutes if all requests use VT
+- A 13-minute interval at 4 requests per minute permits approximately 52 requests.
+
+Caching, deduplication and provider selection can reduce external requests.
+The actual number of API requests must be measured during testing.
+
+## 9. Fixture Review
+
+- Filename conventions aligned with the runbook.
+- VirusTotal missing-file response retained as file_not_found.json.
+- Malicious IP fixtures for AbuseIPDB and OTX require real API evidence.
+- All fixture contents require final security review before merging.

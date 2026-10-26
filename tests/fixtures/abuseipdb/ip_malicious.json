@@ -1,0 +1,18 @@
+{
+  "data": {
+    "ipAddress": "185.220.101.5",
+    "isPublic": true,
+    "ipVersion": 4,
+    "isWhitelisted": false,
+    "abuseConfidenceScore": 100,
+    "countryCode": "DE",
+    "usageType": "University/College/School",
+    "isp": "Artikel10 e.V.",
+    "domain": "artikel10.org",
+    "hostnames": [],
+    "isTor": true,
+    "totalReports": 411,
+    "numDistinctUsers": 120,
+    "lastReportedAt": "2026-10-26T17:50:55+00:00"
+  }
+}
