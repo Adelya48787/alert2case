@@ -1,0 +1,13 @@
+alert_id,expected_verdict,source_of_ioc
+HASH-01,malicious,MalwareBazaar 2026-10-24
+HASH-02,malicious,MalwareBazaar 2026-10-25
+HASH-03,clean,7-Zip Official Distribution (Benign Known Hash)
+HASH-04,suspicious,Internal Custom Build (Zero-Day / Unclassified)
+NET-01,malicious,AbuseIPDB 2026-10-25 (Confidence Score 100%)
+NET-02,malicious,AbuseIPDB 2026-10-26 (Malicious C2 Scanner)
+NET-03,clean,Google Public DNS (Known Benign Anycast)
+NET-04,suspicious,Microsoft Azure Public IP (No Reputation / Unclassified Outbound Traffic)
+WEB-01,malicious,URLhaus 2026-10-25 (Active Malware Script Dropper)
+WEB-02,malicious,URLhaus 2026-10-26 (Phishing Credential Harvester)
+WEB-03,clean,Tranco Top 10 (Wikipedia Official Domain)
+WEB-04,suspicious,New TLD Domain (Unclassified Web Asset / Ambiguous)
