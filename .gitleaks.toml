@@ -1,0 +1,21 @@
+title = "alert2case"
+[extend]
+useDefault = true
+[[rules]]
+id = "virustotal-api-key"
+description = "VirusTotal API key"
+regex = '''(?i)(?:vt|virustotal)[\w-]{0,10}(?:api)?[\w-]{0,5}key\s*[:=]\s*["']?([a-f0-9]{64})'''
+keywords = ["vt", "virustotal"]
+[[rules]]
+id = "abuseipdb-api-key"
+description = "AbuseIPDB API key"
+regex = '''(?i)abuseipdb[\w-]{0,10}key\s*[:=]\s*["']?([a-f0-9]{80})'''
+keywords = ["abuseipdb"]
+[[rules]]
+id = "otx-api-key"
+description = "AlienVault OTX API key"
+regex = '''(?i)otx[\w-]{0,10}key\s*[:=]\s*["']?([a-f0-9]{64})'''
+keywords = ["otx"]
+[allowlist]
+description = "Dataset və fixture-lardakı hash-lar açar deyil"
+paths = ['''dataset/''', '''tests/fixtures/''', '''\.env\.example$''']
