@@ -1,0 +1,61 @@
+
+name: alert2case
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:?}
+    environment:
+      POSTGRES_DB: alert2case
+      POSTGRES_USER: soc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD .env-də boşdur}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pg_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soc -d alert2case"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [soc_net]
+
+  redis:
+    image: redis:${REDIS_VERSION:?}
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [soc_net]
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:?}
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?}
+      GENERIC_TIMEZONE: Asia/Baku
+      TZ: Asia/Baku
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    ports: ["127.0.0.1:5678:5678"]
+    volumes: [n8n_data:/home/node/.n8n]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [soc_net]
+
+  mailpit:
+    image: axllent/mailpit:${MAILPIT_VERSION:?}
+    ports: ["127.0.0.1:8025:8025", "127.0.0.1:1025:1025"]
+    restart: unless-stopped
+    networks: [soc_net]
+
+volumes:
+  pg_data:
+  redis_data:
+  n8n_data:
+
+networks:
+  soc_net:
