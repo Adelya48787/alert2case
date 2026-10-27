@@ -52,10 +52,66 @@ services:
     restart: unless-stopped
     networks: [soc_net]
 
+  cassandra:
+    image: cassandra:${CASSANDRA_VERSION:?}
+    profiles: ["thehive"]
+    environment:
+      CASSANDRA_CLUSTER_NAME: TheHive
+      MAX_HEAP_SIZE: 1024M
+      HEAP_NEWSIZE: 256M
+    volumes: [cassandra_data:/var/lib/cassandra]
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' > /dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+    networks: [soc_net]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION:?}
+    profiles: ["thehive"]
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    volumes: [es_data:/usr/share/elasticsearch/data]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+    networks: [soc_net]
+
+  thehive:
+    image: strangebee/thehive:${THEHIVE_VERSION:?}
+    profiles: ["thehive"]
+    depends_on:
+      cassandra: { condition: service_healthy }
+      elasticsearch: { condition: service_healthy }
+    environment:
+      JVM_OPTS: "-Xms1024M -Xmx1024M"
+    command:
+      - --secret
+      - ${THEHIVE_SECRET:?}
+      - --cql-hostnames
+      - cassandra
+      - --es-hostnames
+      - elasticsearch
+      - --no-config-cortex
+    ports: ["${THEHIVE_BIND:-127.0.0.1}:9000:9000"]
+    volumes: [thehive_data:/opt/thp/thehive/files]
+    restart: unless-stopped
+    networks: [soc_net]
+
 volumes:
   pg_data:
   redis_data:
   n8n_data:
+  cassandra_data:
+  es_data:
+  thehive_data:
 
 networks:
   soc_net:
