@@ -10,7 +10,6 @@
 - Export JSON (poc-vt-check.json, 49 KB): API açarı İÇİNDƏ idi (yoxlama: ACAR VAR). Fayl silindi.
   Səbəb: açar node parametrinə yazılıb, Add Authentication istifadə edilməyib.
   Git-ə qoymazdan əvvəl açarı təmizləmək lazımdır.
-- QALIR: test edilə bilmə, bal matrisi, ADR sətri, təmizləmə.
 
 ## 28.10 əlavə
 - Lisenziya: AGPL-3.0 (pulsuz, açıq mənbə).
