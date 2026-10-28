@@ -1,0 +1,13 @@
+alert_id,expected_verdict,source_of_ioc
+HASH-01,malicious,MalwareBazaar 2026-10-30
+HASH-02,malicious,MalwareBazaar 2026-10-30
+HASH-03,clean,Microsoft Sysinternals Known Hash
+HASH-04,suspicious,Internal In-house Unsigned Tool
+URL-01,malicious,URLhaus 2026-10-30
+URL-02,malicious,URLhaus 2026-10-30
+URL-03,clean,Tranco Top 100 CDN Domain
+URL-04,suspicious,Dynamic DNS Obfuscated Query
+IP-01,malicious,AbuseIPDB 100% Score
+IP-02,malicious,AbuseIPDB 100% Score
+IP-03,clean,Tranco / Google Public DNS
+IP-04,suspicious,Unrated Foreign VPS Outbound
