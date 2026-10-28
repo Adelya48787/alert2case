@@ -1,12 +1,10 @@
 # Baseline: manual L1 triage
 
 ## Metod
-- 12 alert (LOGIN×4, HASH×4, URL×4), hər biri 2 analitik, təsadüfi sıra
-- Alət: tools/timer.py · Tarix: 2026-10-27
+- 12 alert (NET×4, HASH×4, WEB×4), hər biri 2 analitik, təsadüfi sıra
+- Alət: tools/timer.py · Tarix: 2026-10-28
 - Məhdudiyyətlər: kiçik nümunə, Hawthorne effekti, analitiklər tələbədir
 
-## As-is proses
-![as-is](as-is.png)
 
 ## Nəticələr
 <!-- report_output.md-dən cədvəllər bura əlavə olunacaq -->
