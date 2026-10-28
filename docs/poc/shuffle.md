@@ -32,6 +32,8 @@
 
 **Orta (çəkisiz):** 3.0 / 5
 
+**Çəkili nəticə (20/15/15/15/10/10/10/5):** 2.8 / 5
+
 ## Webhook və bildiriş
 
 Sınanmadı, səbəb: PoC vaxtı (~80 dəq) VirusTotal axını və Swarm problemini həll etməyə getdi.
