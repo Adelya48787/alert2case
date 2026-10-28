@@ -17,3 +17,22 @@
 - Authentication bölməsi ilə VT sınağı: status 200.
 - Authentication ilə export: ACAR VAR (açar yenə fayla düşdü). Köhnə node parametrinin qalması ehtimalı yoxlanmayıb. Fayl silindi.
 - Versiya nəzarəti balı: 2. PoC bitdi, ~80 dəq istifadə olunub.
+
+## Bal cədvəli (1–5)
+
+| Meyar | Bal | Qısa səbəb |
+|---|---|---|
+| Test edilə bilmə | 2 | Workflow-u kodla/avtomatik test etmək çətindir, yoxlama əsasən canvas-da əl ilə run-la aparılır. |
+| İnteqrasiyalar | 4 | VirusTotal v3 hazır app kimi tapıldı (15 action), status 200 ilə işlədi. |
+| Rate limit / retry | 2 | Yalnız Delay node var, hazır retry/backoff mexanizmi tapılmadı. |
+| Versiya nəzarəti | 2 | Export JSON-da API açarı düşür (Authentication ilə də), Git-də saxlamaq təhlükəlidir. |
+| Öyrənmə əyrisi | 3 | Canvas intuitivdir, amma Orborus/Swarm qurulumu ~30 dəq problem yaratdı. |
+| Resurs istifadəsi | 2 | Stack işləyəndə ~6.9 GiB RAM istifadə olundu, ~2.8 GiB boş qaldı. |
+| Vizuallıq | 5 | Workflow canvas aydın vizual axın göstərir, debug panel var. |
+| Lisenziya / lock-in | 4 | AGPL-3.0, self-hosted, data bizdədir; export mümkündür, amma format Shuffle-a bağlıdır. |
+
+**Orta (çəkisiz):** 3.0 / 5
+
+## Webhook və bildiriş
+
+Sınanmadı, səbəb: PoC vaxtı (~80 dəq) VirusTotal axını və Swarm problemini həll etməyə getdi.
