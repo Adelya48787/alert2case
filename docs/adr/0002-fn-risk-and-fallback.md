@@ -76,7 +76,7 @@ flowchart TD
 
     Eval -- Xeyr --> OpenCase[TheHive Case Aç\nSlack/Telegram Bildir]
 
-    Eval -- Bəli --> KillSwitch{Kill Switch Aktivdir?\nAUTO_CLOSE_ENABLED==true}
+    Eval -- Bəli --> KillSwitch{AUTO_CLOSE_ENABLED == true?}
     KillSwitch -- Xeyr --> OpenCase
 
     KillSwitch -- Bəli --> Shadow{Shadow Mode?}
