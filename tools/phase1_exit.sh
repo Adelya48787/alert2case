@@ -103,11 +103,12 @@ import json,sys
 try:
     d=json.load(sys.stdin); r=d.get("check_runs",[])
     c=[x.get("conclusion") for x in r]
-    print("none" if not r else ("ok" if all(v=="success" for v in c) else "bad:"+",".join(x["name"]+"="+str(x.get("conclusion")) for x in r)))
+    print("none" if not r else ("running" if any(v is None for v in c) else ("ok" if all(v=="success" for v in c) else "bad:"+",".join(x["name"]+"="+str(x.get("conclusion")) for x in r))))
 except Exception: print("err")' 2>/dev/null)
   case "$CI" in
     ok)   ok "GitHub CI main-də yaşıldır" ci ;;
     none) warn "main üçün CI nəticəsi tapılmadı" ci "GitHub → Actions" ;;
+    running) warn "CI hələ işləyir (yeni merge)" ci "1–2 dəqiqə sonra yenidən işlədin" ;;
     err|"") warn "GitHub API-yə çatmaq olmadı (limit və ya şəbəkə)" ci "Bir az sonra yenidən işlədin" ;;
     *)    bad "CI qırmızıdır: ${CI#bad:}" ci "GitHub → Actions" ;;
   esac
