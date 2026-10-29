@@ -67,3 +67,10 @@ Bu problemlərin hamısı UI-dakı kiçik detallardır, amma birlikdə vaxtın y
 
 ## Qeyd
 Workflow JSON-u runbook qaydasına görə repo-ya qoyulmur. Bu fayl yalnız nəticəni sənədləşdirir.
+
+## Əlavə sınaq (2026-10-29, axşam)
+- **Never Error riski:** HTTP node-da "Never Error" yandırılanda 404/429/5xx xəta deyil, adi cavab kimi ötürülür; `?? 0` ilə birlikdə `malicious = 0` olur və zərərli hash "log" qoluna düşür (fail-open). Default davranış (dayanmaq) daha təhlükəsizdir; Never Error istifadə olunarsa ayrıca status/error yoxlaması (If) məcburidir.
+- **Rate limit / dedup:** 6 sorğu eyni saniyədə göndərildi: 6/6 uğurlu, VT 429 qaytarmadı; n8n özü limit və dedup tətbiq etmir, Mailpit-ə 6 eyni məktub getdi.
+- **Credential:** UI-da VT açarını yapışdırmaq "Wrong API key" verdi (açar curl ilə 200 qaytarırdı); `n8n import:credentials` ilə həll olundu (~25 dəq itki). Credential testi ("Couldn't connect") etibarlı deyil.
+- **Resurs:** n8n container ~539 MiB RAM (boş halda).
+- **Test URL:** hər "Execute workflow" yalnız 1 çağırış qəbul edir; ardıcıl test üçün publish lazımdır.
