@@ -204,9 +204,17 @@ else bad "1.7 docs/week1-report.md yoxdur" t17 "Həftə-1 hesabatı merge olunma
 
 # =================================================================== 6. Kod keyfiyyəti
 section "Kod keyfiyyəti"
-if [ -x .venv/bin/ruff ]; then
-  if .venv/bin/ruff check . >/dev/null 2>&1 && .venv/bin/ruff format --check . >/dev/null 2>&1; then ok "ruff check və format: təmiz" ruff
-  else bad "ruff xəta tapdı" ruff ".venv/bin/ruff check . ilə baxın"; fi
+if [ -x .venv/bin/pre-commit ]; then
+  # CI-dakı lint addımının eynisi (pre-commit --all-files), repo-nun surətində: sizin fayllarınız dəyişmir
+  T=$(mktemp -d)
+  git archive HEAD | tar -x -C "$T"
+  LINT=$(cd "$T" && git init -q && git add -A >/dev/null 2>&1 && "$ROOT/.venv/bin/pre-commit" run --all-files 2>&1; echo "rc=$?")
+  rm -rf "$T"
+  if echo "$LINT" | grep -q 'rc=0$'; then ok "CI lint (pre-commit --all-files) keçir" lint
+  else
+    FAILED=$(echo "$LINT" | grep -E 'Failed$' | sed 's/\.\.\..*//' | tr '\n' ',' | sed 's/,$//')
+    bad "CI lint keçmir: ${FAILED:-naməlum}" lint "pre-commit run --all-files ilə baxın"
+  fi
 fi
 NX=$(git ls-files -s -- '*.md' '*.csv' '*.json' | awk '$1=="100755"{print $4}' | tr '\n' ' ')
 [ -z "$NX" ] && ok "Sənəd faylları icra modunda deyil" modes || warn "İcra modunda sənəd faylları: $NX" modes "chmod -x ... və commit"
