@@ -225,3 +225,7 @@ __marimo__/
 !.env.example
 .timer_state.json
 *.log
+
+# baseline ölçmə köməkçiləri
+.timer_state.json
+.baseline_order_*.txt
