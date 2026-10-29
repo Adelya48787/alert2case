@@ -103,7 +103,7 @@ import json,sys
 try:
     d=json.load(sys.stdin); r=d.get("check_runs",[])
     c=[x.get("conclusion") for x in r]
-    print("none" if not r else ("ok" if all(v=="success" for v in c) else "bad:"+",".join(f"{x[\"name\"]}={x.get(\"conclusion\")}" for x in r)))
+    print("none" if not r else ("ok" if all(v=="success" for v in c) else "bad:"+",".join(x["name"]+"="+str(x.get("conclusion")) for x in r)))
 except Exception: print("err")' 2>/dev/null)
   case "$CI" in
     ok)   ok "GitHub CI main-də yaşıldır" ci ;;
