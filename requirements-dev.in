@@ -1,0 +1,9 @@
+-c requirements.txt
+pytest
+pytest-asyncio
+pytest-cov
+pre-commit
+ruff
+pandas
+tabulate
+matplotlib

@@ -1,0 +1,330 @@
+{
+  "$defs": {
+    "Decision": {
+      "properties": {
+        "verdict": {
+          "enum": [
+            "malicious",
+            "suspicious",
+            "clean",
+            "unknown"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "severity_id": {
+          "$ref": "#/$defs/Severity"
+        },
+        "priority": {
+          "enum": [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "auto_close",
+            "create_case"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "rule_id": {
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "title": "Rule Version",
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "shadow": {
+          "default": false,
+          "title": "Shadow",
+          "type": "boolean"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdict",
+        "severity_id",
+        "priority",
+        "action",
+        "rule_id",
+        "rule_version",
+        "reasons"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "Enrichment": {
+      "properties": {
+        "status": {
+          "default": "pending",
+          "enum": [
+            "pending",
+            "ok",
+            "partial",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reputation_score": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reputation Score"
+        },
+        "confidence": {
+          "default": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "conflict": {
+          "default": false,
+          "title": "Conflict",
+          "type": "boolean"
+        },
+        "verdict": {
+          "default": "unknown",
+          "enum": [
+            "malicious",
+            "suspicious",
+            "clean",
+            "unknown"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "providers": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Providers",
+          "type": "array"
+        }
+      },
+      "title": "Enrichment",
+      "type": "object"
+    },
+    "Observable": {
+      "properties": {
+        "type": {
+          "enum": [
+            "ip",
+            "domain",
+            "url",
+            "hash_md5",
+            "hash_sha1",
+            "hash_sha256",
+            "user",
+            "host"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "role": {
+          "default": "artifact",
+          "enum": [
+            "src",
+            "dst",
+            "actor",
+            "target",
+            "artifact"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "internal": {
+          "default": false,
+          "title": "Internal",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "Observable",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "title": "Severity",
+      "type": "integer"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "class_uid": {
+      "default": 2004,
+      "title": "Class Uid",
+      "type": "integer"
+    },
+    "alert_id": {
+      "format": "uuid",
+      "title": "Alert Id",
+      "type": "string"
+    },
+    "source_system": {
+      "enum": [
+        "wazuh",
+        "edr",
+        "proxy"
+      ],
+      "title": "Source System",
+      "type": "string"
+    },
+    "source_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Ref"
+    },
+    "alert_type": {
+      "enum": [
+        "suspicious_login",
+        "malicious_hash",
+        "suspicious_url"
+      ],
+      "title": "Alert Type",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "time": {
+      "format": "date-time",
+      "title": "Time",
+      "type": "string"
+    },
+    "received_at": {
+      "format": "date-time",
+      "title": "Received At",
+      "type": "string"
+    },
+    "severity_id": {
+      "$ref": "#/$defs/Severity",
+      "default": 0
+    },
+    "user": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "User"
+    },
+    "host": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Host"
+    },
+    "observables": {
+      "items": {
+        "$ref": "#/$defs/Observable"
+      },
+      "minItems": 1,
+      "title": "Observables",
+      "type": "array"
+    },
+    "fingerprint": {
+      "default": "",
+      "title": "Fingerprint",
+      "type": "string"
+    },
+    "context": {
+      "additionalProperties": true,
+      "title": "Context",
+      "type": "object"
+    },
+    "enrichment": {
+      "$ref": "#/$defs/Enrichment"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Decision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "raw": {
+      "additionalProperties": true,
+      "title": "Raw",
+      "type": "object"
+    }
+  },
+  "required": [
+    "source_system",
+    "alert_type",
+    "title",
+    "time",
+    "received_at",
+    "observables",
+    "raw"
+  ],
+  "title": "NormalizedAlert",
+  "type": "object"
+}

@@ -51,6 +51,8 @@ services:
     ports: ["127.0.0.1:8025:8025", "127.0.0.1:1025:1025"]
     restart: unless-stopped
     networks: [soc_net]
+    environment:
+      MP_SMTP_DISABLE_RDNS: "true"
 
   cassandra:
     image: cassandra:${CASSANDRA_VERSION:?}
