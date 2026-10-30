@@ -68,7 +68,9 @@ python-dateutil==3.0.0
 python-discovery==1.6.4
     # via virtualenv
 pyyaml==6.0.3
-    # via pre-commit
+    # via
+    #   -c requirements.txt
+    #   pre-commit
 ruff==0.17.2
     # via -r requirements-dev.in
 six==1.17.0
