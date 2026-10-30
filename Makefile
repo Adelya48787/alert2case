@@ -13,3 +13,6 @@ reset:     ## DİQQƏT: bütün məlumatı silir
 	docker compose --profile thehive down -v
 doctor:
 	tools/doctor.sh
+
+simulate:   ## 36 alert-i API-yə göndər
+	python tools/simulator.py --rate 2
