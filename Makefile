@@ -1,4 +1,4 @@
-.PHONY: up up-full down ps logs reset doctor
+.PHONY: up up-full down ps logs reset doctor simulate
 up:        ## əsas servislər
 	docker compose up -d
 up-full:   ## + TheHive steki
