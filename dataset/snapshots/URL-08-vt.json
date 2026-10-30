@@ -1,0 +1,1 @@
+{"alert_id":"URL-08","ioc":"https://internal.company.corp/","ioc_type":"url","provider":"vt","endpoint":"https://www.virustotal.com/api/v3/urls/aHR0cHM6Ly9pbnRlcm5hbC5jb21wYW55LmNvcnAv","http_status":404,"collected_at_utc":"2026-10-30T07:20:00+00:00","response":{"error":{"code":"NotFoundError","message":"URL \"aHR0cHM6Ly9pbnRlcm5hbC5jb21wYW55LmNvcnAv\" not found"}}}

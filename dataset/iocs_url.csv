@@ -1,0 +1,13 @@
+alert_id,alert_type,ioc,user,host,src_ip,file_name,note
+URL-01,suspicious_url,hxxp://160[.]176[.]196[.]201:51769/i,teymur,WS-021,10.0.4.21,,target=malicious; source=urlhaus; listing 2026-10-30; correlation=teymur; provider_snapshots=pending; event_context=synthetic
+URL-02,suspicious_url,hxxp://182[.]116[.]38[.]41:49535/i,aysel,WS-022,10.0.4.22,,target=malicious; source=urlhaus; Mozi listing 2026-10-30; provider_snapshots=pending; event_context=synthetic
+URL-03,suspicious_url,hxxp://125[.]46[.]131[.]53:41661/i,kamran,WS-023,10.0.4.23,,target=malicious; source=urlhaus; listing 2026-10-30; provider_snapshots=pending; event_context=synthetic
+URL-04,suspicious_url,hxxp://160[.]176[.]196[.]201:51769/bin[.]sh,gunel,WS-024,10.0.4.24,,target=malicious; source=urlhaus; Mozi listing 2026-10-30; provider_snapshots=pending; event_context=synthetic
+URL-05,suspicious_url,hxxps://google[.]com/,samir,WS-025,10.0.4.25,,target=clean; source=tranco; list=PYK6J; rank=1; popularity is not proof every URL is safe; provider_snapshots=pending; event_context=synthetic
+URL-06,suspicious_url,hxxps://cloudflare[.]com/,leysan,WS-026,10.0.4.26,,target=clean; source=tranco; list=PYK6J; rank=2; provider_snapshots=pending; event_context=synthetic
+URL-07,suspicious_url,hxxps://microsoft[.]com/,murad,WS-027,10.0.4.27,,target=clean; source=tranco; list=PYK6J; rank=10; provider_snapshots=pending; event_context=synthetic
+URL-08,suspicious_url,hxxps://internal[.]company[.]corp/,elvin,WS-028,10.0.4.28,,target=clean; allowlist=company_internal_domain; internal corporate portal; provider_snapshots=pending; event_context=synthetic
+URL-09,suspicious_url,hxxps://backup-sync[.]duckdns[.]org/data,analyst-test,WS-029,10.0.4.29,,target=uncertain; dynamic_dns=duckdns; unclassified custom subdomain; provider_snapshots=pending; event_context=synthetic
+URL-10,suspicious_url,hxxps://gateway-check[.]ddns[.]net/status,analyst-test,WS-030,10.0.4.30,,target=uncertain; dynamic_dns=no-ip; ambiguous remote endpoint; provider_snapshots=pending; event_context=synthetic
+URL-11,suspicious_url,hxxps://cdn-static-assets[.]xyz/bundle[.]js,analyst-test,WS-031,10.0.4.31,,target=uncertain; new_tld=xyz; unclassified static asset CDN; provider_snapshots=pending; event_context=synthetic
+URL-12,suspicious_url,hxxps://temp-share-file[.]pages[.]dev/test,analyst-test,WS-032,10.0.4.32,,target=uncertain; cloud_provider=cloudflare_pages; free tier hosting with ambiguous reputation; provider_snapshots=pending; event_context=synthetic
