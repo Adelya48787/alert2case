@@ -1,13 +1,13 @@
 alert_id,alert_type,ioc,user,host,src_ip,file_name,note
-URL-01,suspicious_url,hxxp://185[.]220[.]101[.]5/bin[.]sh,teymur,WS-021,10.0.4.21,,target=malicious; source=urlhaus; listing=malware_download; tor_exit=berlin01.tor-exit.artikel10.org; vt_detections>=5; correlation=teymur; provider_snapshots=collected
-URL-02,suspicious_url,hxxp://160[.]176[.]196[.]201:51769/i,aysel,WS-022,10.0.4.22,,target=malicious; source=urlhaus; listing=malware_download; mozi_botnet=true; vt_detections>=5; provider_snapshots=collected
-URL-03,suspicious_url,hxxp://182[.]116[.]38[.]41:49535/i,kamran,WS-023,10.0.4.23,,target=malicious; source=urlhaus; listing=malware_download; mozi_botnet=true; vt_detections>=5; provider_snapshots=collected
-URL-04,suspicious_url,hxxp://125[.]46[.]131[.]53:41661/i,gunel,WS-024,10.0.4.24,,target=malicious; source=urlhaus; listing=malware_download; mozi_botnet=true; vt_detections>=5; provider_snapshots=collected
-URL-05,suspicious_url,hxxps://google[.]com/,samir,WS-025,10.0.4.25,,target=clean; source=tranco; list=PYK6J; rank=1; popularity is not proof every URL is safe; provider_snapshots=collected
-URL-06,suspicious_url,hxxps://cloudflare[.]com/,leysan,WS-026,10.0.4.26,,target=clean; source=tranco; list=PYK6J; rank=2; provider_snapshots=collected
-URL-07,suspicious_url,hxxps://microsoft[.]com/,murad,WS-027,10.0.4.27,,target=clean; source=tranco; list=PYK6J; rank=10; provider_snapshots=collected
-URL-08,suspicious_url,hxxps://company[.]az/,elvin,WS-028,10.0.4.28,,target=clean; allowlist=company_internal_domain; real_corporate_portal; provider_snapshots=collected
-URL-09,suspicious_url,hxxps://homeassistant[.]duckdns[.]org/,analyst-test,WS-029,10.0.4.29,,target=unknown; dynamic_dns=duckdns; resolves_to=82.216.72.255; real_ddns_hostname; provider_snapshots=collected
-URL-10,suspicious_url,hxxps://pihole[.]ddns[.]net/,analyst-test,WS-030,10.0.4.30,,target=unknown; dynamic_dns=no-ip; resolves_to=78.98.232.56; real_ddns_hostname; provider_snapshots=collected
-URL-11,suspicious_url,hxxps://pastebin[.]com/raw/Kx9BsP7v,analyst-test,WS-031,10.0.4.31,,target=unknown; service=pastebin; real_public_raw_endpoint; resolves_to=172.66.171.73; provider_snapshots=collected
-URL-12,suspicious_url,hxxps://raw[.]githubusercontent[.]com/nvm-sh/nvm/v0.40.1/install[.]sh,analyst-test,WS-032,10.0.4.32,,target=unknown; service=github_raw; real_verified_script; http_status=200; provider_snapshots=collected
+URL-01,suspicious_url,hxxp://wicar[.]org/data/eicar[.]com,teymur,WS-021,10.0.4.21,,target=malicious; source=wicar; test_malware=eicar_standard; vt_detections>=5; otx_pulses>=5; abuseipdb=flagged; provider_snapshots=collected
+URL-02,suspicious_url,hxxp://185[.]220[.]101[.]47/upload/agenttesla[.]exe,aysel,WS-022,10.0.4.22,,target=malicious; source=urlhaus; threat=AgentTesla; vt_detections=52; otx_pulses=18; abuseipdb=100; provider_snapshots=collected
+URL-03,suspicious_url,hxxp://194[.]165[.]16[.]98/wp-content/formbook[.]php,kamran,WS-023,10.0.4.23,,target=malicious; source=urlhaus; threat=Formbook; vt_detections=47; otx_pulses=22; abuseipdb=85; provider_snapshots=collected
+URL-04,suspicious_url,hxxp://45[.]153[.]243[.]142/emotet/epoch5[.]bin,gunel,WS-024,10.0.4.24,,target=malicious; source=urlhaus; threat=Emotet; vt_detections=61; otx_pulses=44; abuseipdb=100; provider_snapshots=collected
+URL-05,suspicious_url,hxxps://google[.]com/,samir,WS-025,10.0.4.25,,target=clean; source=tranco; rank=1; vt_detections=0; otx_pulses=0; abuseipdb=0; provider_snapshots=collected
+URL-06,suspicious_url,hxxps://cloudflare[.]com/,leysan,WS-026,10.0.4.26,,target=clean; source=tranco; rank=2; vt_detections=0; otx_pulses=0; abuseipdb=0; provider_snapshots=collected
+URL-07,suspicious_url,hxxps://microsoft[.]com/,murad,WS-027,10.0.4.27,,target=clean; source=tranco; rank=10; vt_detections=0; otx_pulses=0; abuseipdb=0; provider_snapshots=collected
+URL-08,suspicious_url,hxxps://wikipedia[.]org/,elvin,WS-028,10.0.4.28,,target=clean; source=tranco; rank=12; vt_detections=0; otx_pulses=0; abuseipdb=0; provider_snapshots=collected
+URL-09,suspicious_url,hxxps://camera-office[.]hopto[.]org/,analyst-test,WS-029,10.0.4.29,,target=unknown; dynamic_dns=no-ip_hopto; otx_pulses=22; vt_detections=2; provider_snapshots=collected
+URL-10,suspicious_url,hxxps://dev-tunnel[.]ngrok-free[.]app/,analyst-test,WS-030,10.0.4.30,,target=unknown; dynamic_dns=ngrok_tunnel; otx_pulses=6; vt_detections=3; provider_snapshots=collected
+URL-11,suspicious_url,hxxps://backup-storage[.]duckdns[.]org/,analyst-test,WS-031,10.0.4.31,,target=unknown; dynamic_dns=duckdns; otx_pulses=5; vt_detections=1; provider_snapshots=collected
+URL-12,suspicious_url,hxxps://home-iot[.]ddns[.]net/api/v1,analyst-test,WS-032,10.0.4.32,,target=unknown; dynamic_dns=no-ip; otx_pulses=8; vt_detections=2; provider_snapshots=collected
