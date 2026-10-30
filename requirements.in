@@ -7,3 +7,4 @@ asyncpg
 psycopg[binary]
 alembic
 sqlalchemy
+tldextract

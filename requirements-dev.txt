@@ -12,6 +12,7 @@ distlib==0.4.4
     # via virtualenv
 filelock==4.2.4
     # via
+    #   -c requirements.txt
     #   python-discovery
     #   virtualenv
 fonttools==4.68.0

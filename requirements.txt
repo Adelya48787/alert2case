@@ -12,16 +12,25 @@ anyio==4.15.1
     #   watchfiles
 asyncpg==0.32.0
     # via -r requirements.in
+certifi==2026.10.23
+    # via requests
+charset-normalizer==3.5.2
+    # via requests
 click==8.5.0
     # via uvicorn
 fastapi==0.162.0
     # via -r requirements.in
+filelock==4.2.4
+    # via tldextract
 h11==0.16.0
     # via uvicorn
 httptools==0.9.0
     # via uvicorn
 idna==3.20
-    # via anyio
+    # via
+    #   anyio
+    #   requests
+    #   tldextract
 mako==1.4.3
     # via alembic
 markupsafe==3.0.4
@@ -49,12 +58,20 @@ pyyaml==6.0.3
     # via uvicorn
 redis==8.1.0
     # via -r requirements.in
+requests==2.34.2
+    # via
+    #   requests-file
+    #   tldextract
+requests-file==3.0.1
+    # via tldextract
 sqlalchemy==2.1.6
     # via
     #   -r requirements.in
     #   alembic
 starlette==1.10.0
     # via fastapi
+tldextract==5.4.0
+    # via -r requirements.in
 typing-extensions==4.16.0
     # via
     #   alembic
@@ -73,6 +90,8 @@ typing-inspection==0.4.4
     #   fastapi
     #   pydantic
     #   pydantic-settings
+urllib3==2.8.0
+    # via requests
 uvicorn==0.54.0
     # via -r requirements.in
 uvloop==0.23.0
