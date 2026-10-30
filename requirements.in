@@ -1,2 +1,13 @@
 pydantic>=2.7
 pydantic-settings
+fastapi
+uvicorn[standard]
+redis>=5
+asyncpg
+psycopg[binary]
+alembic
+sqlalchemy
+tldextract
+httpx
+typer
+python-dotenv
