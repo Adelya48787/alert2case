@@ -8,3 +8,6 @@ psycopg[binary]
 alembic
 sqlalchemy
 tldextract
+httpx
+typer
+python-dotenv
