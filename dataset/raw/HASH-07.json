@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-07",
+    "event_time": "2026-11-02T08:43:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-031"
+    },
+    "user": "samir",
+    "file": {
+      "name": "npp.Installer.x64.exe",
+      "path": "C:\\Users\\samir\\Downloads\\",
+      "sha256": "26f3bcced788fadbac4e7e577b430ea2ce6060cf3bcad993ef4612ecd7d743da"
+    }
+  }
+}

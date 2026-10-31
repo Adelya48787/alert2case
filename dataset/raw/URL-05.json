@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T09:52:00+00:00",
+    "event": {
+      "id": "URL-05",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://google[.]com/"
+    },
+    "source": {
+      "ip": "10.0.4.25"
+    },
+    "user": {
+      "name": "samir"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

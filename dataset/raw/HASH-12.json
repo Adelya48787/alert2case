@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-12",
+    "event_time": "2026-11-02T09:22:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-043"
+    },
+    "user": "leysan",
+    "file": {
+      "name": "sync_agent.exe",
+      "path": "C:\\Users\\leysan\\Downloads\\",
+      "sha256": "ec99dce6f6f045cb153bc02c341b5b52c0f89465f28e26c70aa22c3738962681"
+    }
+  }
+}

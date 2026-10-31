@@ -1,0 +1,20 @@
+{
+  "source": "wazuh",
+  "payload": {
+    "id": "LOGIN-05",
+    "timestamp": "2026-11-02T11:21:00+00:00",
+    "rule": {
+      "id": "5715",
+      "level": 10,
+      "description": "sshd: authentication success from unusual location"
+    },
+    "agent": {
+      "name": "vpn-gw"
+    },
+    "data": {
+      "srcip": "8.8.8.8",
+      "dstuser": "kamran"
+    },
+    "full_log": "Accepted password for kamran from 8.8.8.8 port 52144 ssh2"
+  }
+}
