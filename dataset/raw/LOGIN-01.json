@@ -1,0 +1,20 @@
+{
+  "source": "wazuh",
+  "payload": {
+    "id": "LOGIN-01",
+    "timestamp": "2026-11-02T10:52:00+00:00",
+    "rule": {
+      "id": "5715",
+      "level": 10,
+      "description": "sshd: authentication success from unusual location"
+    },
+    "agent": {
+      "name": "vpn-gw"
+    },
+    "data": {
+      "srcip": "171.25.193.25",
+      "dstuser": "elcin.admin"
+    },
+    "full_log": "Accepted password for elcin.admin from 171.25.193.25 port 52144 ssh2"
+  }
+}

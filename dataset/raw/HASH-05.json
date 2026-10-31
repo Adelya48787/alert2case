@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-05",
+    "event_time": "2026-11-02T08:30:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-025"
+    },
+    "user": "leysan",
+    "file": {
+      "name": "putty.exe",
+      "path": "C:\\Users\\leysan\\Downloads\\",
+      "sha256": "d01fdb5aae8f112526040a39b0bfb9e27d813003178645e65f8d1cfdb2a26c87"
+    }
+  }
+}

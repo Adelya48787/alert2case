@@ -9,7 +9,8 @@ import tldextract
 
 _HEX = re.compile(r"^[a-f0-9]+$")
 _HASH_TYPES = {32: "hash_md5", 40: "hash_sha1", 64: "hash_sha256"}
-_tld = tldextract.TLDExtract(suffix_list_urls=())  # şəbəkəsiz: paketin daxili siyahısı
+# şəbəkəsiz (paketin daxili siyahısı); private suffix-lər: duckdns.org kimi provayderlərdə alt domen saxlanılır
+_tld = tldextract.TLDExtract(suffix_list_urls=(), include_psl_private_domains=True)
 
 
 def refang(s: str) -> str:

@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T10:14:00+00:00",
+    "event": {
+      "id": "URL-08",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://wikipedia[.]org/"
+    },
+    "source": {
+      "ip": "10.0.4.28"
+    },
+    "user": {
+      "name": "elvin"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

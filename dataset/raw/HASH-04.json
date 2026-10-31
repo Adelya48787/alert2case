@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-04",
+    "event_time": "2026-11-02T08:26:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-033"
+    },
+    "user": "kamran",
+    "file": {
+      "name": "setup_patch.exe",
+      "path": "C:\\Users\\kamran\\Downloads\\",
+      "sha256": "8ea41018e473f8acce5c61e176769c7e7710a0874385922f947af6d7719bf865"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-10",
+    "event_time": "2026-11-02T09:03:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-041"
+    },
+    "user": "elcin",
+    "file": {
+      "name": "build_tool.exe",
+      "path": "C:\\Users\\elcin\\Downloads\\",
+      "sha256": "2aecfb688d9d6cda1c79a904d19457a1fa7b262c58362ad6f97408e635cfb3aa"
+    }
+  }
+}
