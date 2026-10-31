@@ -1,0 +1,37 @@
+alert_id,verdict,reason
+HASH-01,malicious,VT 27/75; OTX 0
+HASH-02,malicious,VT 66/75; OTX 50; EICAR test faylı; kritik host DC-01
+HASH-03,malicious,VT 23/75; OTX 1
+HASH-04,malicious,VT 8/75; OTX 0; 8 mühərrik zərərli deyir
+HASH-05,clean,VT 0/75; OTX 7; VT təmiz; OTX pulse istinadı tək başına hökm deyil
+HASH-06,clean,VT 0/75; OTX 0
+HASH-07,clean,VT 0/75; OTX 0
+HASH-08,clean,VT 0/75; OTX 0
+HASH-09,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+HASH-10,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+HASH-11,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+HASH-12,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+URL-01,uncertain,VT 3/97; OTX 0; tək-tük aşkarlanma
+URL-02,malicious,VT 6/93; OTX 0
+URL-03,malicious,VT 16/93; OTX 0
+URL-04,malicious,VT 5/93 (+2 susp); OTX 0; 5 zərərli + 2 şübhəli
+URL-05,uncertain,VT 1/93; OTX 13; zəif və ziddiyyətli siqnal
+URL-06,clean,VT 0/93; OTX 2; VT təmiz; OTX pulse istinadı tək başına hökm deyil
+URL-07,clean,VT 0/93; OTX 10; VT təmiz; OTX pulse istinadı tək başına hökm deyil
+URL-08,clean,VT 0/93; OTX 0
+URL-09,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+URL-10,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+URL-11,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+URL-12,uncertain,VT görülməyib (NotFoundError); OTX 0; heç bir mənbədə məlumat yoxdur
+LOGIN-01,malicious,VT 13/92 (+2 susp); AbuseIPDB 100; OTX 50; Tor exit; Tor exit; imtiyazlı user
+LOGIN-02,malicious,VT 16/92 (+3 susp); AbuseIPDB 100; OTX 50; Tor exit; Tor exit; imtiyazlı user
+LOGIN-03,malicious,VT 13/92 (+3 susp); AbuseIPDB 100; OTX 50
+LOGIN-04,malicious,VT 2/92 (+2 susp); AbuseIPDB 100; OTX 5; AbuseIPDB maksimum skor
+LOGIN-05,clean,VT 0/92; AbuseIPDB 0; OTX 0
+LOGIN-06,clean,VT 0/92; AbuseIPDB 0; OTX 0
+LOGIN-07,clean,VT 0/92; AbuseIPDB 0; OTX 50; VT və AbuseIPDB təmiz; OTX pulse public DNS səs-küyüdür
+LOGIN-08,clean,VT 0/92; AbuseIPDB 0; OTX 0
+LOGIN-09,uncertain,VT 0/92; AbuseIPDB 23; OTX 0
+LOGIN-10,uncertain,VT 2/92; AbuseIPDB 26; OTX 0
+LOGIN-11,uncertain,VT 2/92 (+2 susp); AbuseIPDB 24; OTX 0
+LOGIN-12,uncertain,VT 0/92; AbuseIPDB 23; OTX 0
