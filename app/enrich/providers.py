@@ -42,4 +42,37 @@ class VirusTotal(IntelProvider):
         )
 
 
-PROVIDERS: list[IntelProvider] = [VirusTotal()]
+class AbuseIPDB(IntelProvider):
+    name = "abuseipdb"
+    supported = frozenset({"ip"})
+    per_minute, per_day, burst = 30, 1000, 5
+
+    def api_key(self) -> str:
+        return settings.abuseipdb_api_key
+
+    async def lookup(self, ioc_type: str, value: str) -> ProviderResult:
+        data = await get_json(
+            self.name,
+            settings.abuseipdb_base_url + "/check",
+            headers={"Key": self.api_key(), "Accept": "application/json"},
+            params={"ipAddress": value, "maxAgeInDays": 90},
+        )
+        if data is None:
+            return self.result(ioc_type, value, "not_found")
+        d = data["data"]
+        score = 0 if d.get("isWhitelisted") else int(d.get("abuseConfidenceScore", 0))
+        return self.ok(
+            ioc_type,
+            value,
+            score,
+            {
+                "confidence": d.get("abuseConfidenceScore"),
+                "reports": d.get("totalReports"),
+                "whitelisted": d.get("isWhitelisted"),
+                "tor": d.get("isTor"),
+                "country": d.get("countryCode"),
+            },
+        )
+
+
+PROVIDERS: list[IntelProvider] = [VirusTotal(), AbuseIPDB()]
