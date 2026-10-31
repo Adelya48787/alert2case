@@ -15,6 +15,7 @@ from redis.exceptions import TimeoutError as RedisTimeoutError
 from app import queue
 from app.errors import PermanentError
 from app.pipeline import process
+from app.enrich import reenrich
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("worker")
@@ -65,6 +66,7 @@ async def main() -> None:
     await queue.ensure_group()
     sem = asyncio.Semaphore(CONCURRENCY)
     reclaim = asyncio.create_task(reclaim_loop())
+    asyncio.create_task(reenrich.loop())
     _tasks.add(reclaim)
     log.info("worker %s başladı", CONSUMER)
 

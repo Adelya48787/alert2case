@@ -67,3 +67,16 @@ async def save_alert(a: NormalizedAlert, status: str) -> None:
         a.model_dump(mode="json"),
         status,
     )
+
+
+async def alerts_needing_reenrich(hours: int = 24, limit: int = 50) -> list:
+    p = await pool()
+    return await p.fetch(
+        """SELECT doc, status FROM alerts
+           WHERE doc->'enrichment'->>'status' IN ('partial', 'failed')
+             AND status NOT IN ('closed_auto', 'closed')
+             AND received_at > now() - make_interval(hours => $1)
+           ORDER BY received_at LIMIT $2""",
+        hours,
+        limit,
+    )

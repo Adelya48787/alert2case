@@ -8,6 +8,7 @@ import pytest
 from app import db, pipeline
 from app.audit.log import GENESIS, row_hash
 from app.errors import PermanentError
+from app.schemas.alert import Enrichment
 
 
 @pytest.fixture
@@ -26,14 +27,19 @@ def fake(monkeypatch):
     monkeypatch.setattr(db, "upsert_alert", upsert)
     monkeypatch.setattr(db, "save_alert", save)
     monkeypatch.setattr(pipeline, "audit", audit)
+
+    async def enrich(alert):
+        return Enrichment(status="ok", verdict="clean", reputation_score=1, confidence=1.0)
+
+    monkeypatch.setattr(pipeline, "enrich", enrich)
     return calls
 
 
 async def test_new_alert_is_audited_and_saved(fake, raw_doc, now):
     doc = raw_doc("HASH-01")
     await pipeline.process("edr", json.dumps(doc["payload"]), now)
-    assert fake["audit"] == [("ingest", "received"), ("normalize", "ok")]
-    assert fake["saved"] == ["normalized"]
+    assert fake["audit"] == [("ingest", "received"), ("normalize", "ok"), ("enrich", "ok")]
+    assert fake["saved"] == ["enriched"]
 
 
 async def test_duplicate_is_not_saved_again(fake, raw_doc, now):
