@@ -11,3 +11,5 @@ tldextract
 httpx
 typer
 python-dotenv
+tenacity
+pyyaml

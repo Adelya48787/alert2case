@@ -10,6 +10,8 @@ cycler==0.12.1
     # via matplotlib
 distlib==0.4.4
     # via virtualenv
+fakeredis==2.40.0
+    # via -r requirements-dev.in
 filelock==4.2.4
     # via
     #   -c requirements.txt
@@ -25,6 +27,8 @@ iniconfig==2.3.1
     # via pytest
 kiwisolver==1.5.1
     # via matplotlib
+lupa==2.8
+    # via fakeredis
 matplotlib==3.11.2
     # via -r requirements-dev.in
 nodeenv==1.11.0
@@ -76,12 +80,18 @@ pyyaml==6.0.3
     # via
     #   -c requirements.txt
     #   pre-commit
+redis==8.1.0
+    # via
+    #   -c requirements.txt
+    #   fakeredis
 ruff==0.17.2
     # via -r requirements-dev.in
 six==1.17.0
     # via python-dateutil
 sortedcontainers==2.4.0
-    # via hypothesis
+    # via
+    #   fakeredis
+    #   hypothesis
 tabulate==0.10.0
     # via -r requirements-dev.in
 typing-extensions==4.16.0
