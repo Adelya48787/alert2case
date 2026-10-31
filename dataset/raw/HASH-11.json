@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-11",
+    "event_time": "2026-11-02T09:15:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-042"
+    },
+    "user": "kamran",
+    "file": {
+      "name": "report_viewer.exe",
+      "path": "C:\\Users\\kamran\\Downloads\\",
+      "sha256": "3a89f3b69a45fe6443e4cf3781ced7591b4925a49716a1f84055357aa4ec0942"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T10:21:00+00:00",
+    "event": {
+      "id": "URL-09",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://camera-office[.]hopto[.]org/"
+    },
+    "source": {
+      "ip": "10.0.4.29"
+    },
+    "user": {
+      "name": "analyst-test"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

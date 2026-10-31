@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T09:31:00+00:00",
+    "event": {
+      "id": "URL-02",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxp://182[.]117[.]40[.]248:59279/i"
+    },
+    "source": {
+      "ip": "10.0.4.22"
+    },
+    "user": {
+      "name": "aysel"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

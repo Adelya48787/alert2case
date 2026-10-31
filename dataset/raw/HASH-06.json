@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-06",
+    "event_time": "2026-11-02T08:36:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-028"
+    },
+    "user": "gunel",
+    "file": {
+      "name": "python-3.12.7-amd64.exe",
+      "path": "C:\\Users\\gunel\\Downloads\\",
+      "sha256": "1206721601a62c925d4e4a0dcfc371e88f2ddbe8c0c07962ebb2be9b5bde4570"
+    }
+  }
+}

@@ -229,3 +229,5 @@ __marimo__/
 # baseline ölçmə köməkçiləri
 .timer_state.json
 .baseline_order_*.txt
+dataset/normalized/*.json
+.vscode/

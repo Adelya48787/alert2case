@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T10:38:00+00:00",
+    "event": {
+      "id": "URL-11",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://backup-storage[.]duckdns[.]org/"
+    },
+    "source": {
+      "ip": "10.0.4.31"
+    },
+    "user": {
+      "name": "analyst-test"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

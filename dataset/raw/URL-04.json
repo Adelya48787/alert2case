@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T09:48:00+00:00",
+    "event": {
+      "id": "URL-04",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxp://123[.]13[.]79[.]26:33158/bin[.]sh"
+    },
+    "source": {
+      "ip": "10.0.4.24"
+    },
+    "user": {
+      "name": "gunel"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

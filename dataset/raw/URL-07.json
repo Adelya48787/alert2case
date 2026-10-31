@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T10:06:00+00:00",
+    "event": {
+      "id": "URL-07",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://microsoft[.]com/"
+    },
+    "source": {
+      "ip": "10.0.4.27"
+    },
+    "user": {
+      "name": "murad"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}
