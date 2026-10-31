@@ -75,7 +75,9 @@ python-dotenv==1.2.4
     #   pydantic-settings
     #   uvicorn
 pyyaml==6.0.3
-    # via uvicorn
+    # via
+    #   -r requirements.in
+    #   uvicorn
 redis==8.1.0
     # via -r requirements.in
 requests==2.34.2
@@ -94,6 +96,8 @@ sqlalchemy==2.1.6
     #   alembic
 starlette==1.10.0
     # via fastapi
+tenacity==9.2.1
+    # via -r requirements.in
 tldextract==5.4.0
     # via -r requirements.in
 typer==0.27.3
