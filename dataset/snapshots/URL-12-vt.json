@@ -1,0 +1,1 @@
+{"alert_id":"URL-12","ioc":"https://home-iot.ddns.net/api/v1","ioc_type":"url","provider":"vt","endpoint":"https://www.virustotal.com/api/v3/urls/aHR0cHM6Ly9ob21lLWlvdC5kZG5zLm5ldC9hcGkvdjE","http_status":404,"collected_at_utc":"2026-10-30T12:10:06+00:00","response":{"error":{"code":"NotFoundError","message":"URL \"aHR0cHM6Ly9ob21lLWlvdC5kZG5zLm5ldC9hcGkvdjE\" not found"}}}

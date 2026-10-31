@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T10:41:00+00:00",
+    "event": {
+      "id": "URL-12",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxps://home-iot[.]ddns[.]net/api/v1"
+    },
+    "source": {
+      "ip": "10.0.4.32"
+    },
+    "user": {
+      "name": "analyst-test"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

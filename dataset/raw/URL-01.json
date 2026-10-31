@@ -1,0 +1,25 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-02T09:28:00+00:00",
+    "event": {
+      "id": "URL-01",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxp://wicar[.]org/data/eicar[.]com"
+    },
+    "source": {
+      "ip": "10.0.4.21"
+    },
+    "user": {
+      "name": "teymur"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

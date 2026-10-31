@@ -12,6 +12,7 @@ distlib==0.4.4
     # via virtualenv
 filelock==4.2.4
     # via
+    #   -c requirements.txt
     #   python-discovery
     #   virtualenv
 fonttools==4.68.0
@@ -49,7 +50,9 @@ pluggy==1.7.0
 pre-commit==4.7.0
     # via -r requirements-dev.in
 pygments==2.21.0
-    # via pytest
+    # via
+    #   -c requirements.txt
+    #   pytest
 pyparsing==3.3.3
     # via matplotlib
 pytest==9.1.1
@@ -68,7 +71,9 @@ python-dateutil==3.0.0
 python-discovery==1.6.4
     # via virtualenv
 pyyaml==6.0.3
-    # via pre-commit
+    # via
+    #   -c requirements.txt
+    #   pre-commit
 ruff==0.17.2
     # via -r requirements-dev.in
 six==1.17.0

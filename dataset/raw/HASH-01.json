@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-01",
+    "event_time": "2026-11-02T08:05:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-014"
+    },
+    "user": "adile",
+    "file": {
+      "name": "invoice_0425.exe",
+      "path": "C:\\Users\\adile\\Downloads\\",
+      "sha256": "48a9afbd26bb74b40325cb2f2d9357c21cb7291be7d576585c16677ce4cb32ff"
+    }
+  }
+}

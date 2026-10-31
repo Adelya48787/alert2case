@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-03",
+    "event_time": "2026-11-02T08:14:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-021"
+    },
+    "user": "teymur",
+    "file": {
+      "name": "update_helper.exe",
+      "path": "C:\\Users\\teymur\\Downloads\\",
+      "sha256": "5f8cf3213f664b81240b186f1e26dcbb1c7d6a6910e31de357da022c06b866ae"
+    }
+  }
+}

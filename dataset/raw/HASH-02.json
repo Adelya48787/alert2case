@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "HASH-02",
+    "event_time": "2026-11-02T08:07:00+00:00",
+    "detection": {
+      "name": "Suspicious executable",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "DC-01"
+    },
+    "user": "elvin",
+    "file": {
+      "name": "eicar.com",
+      "path": "C:\\Users\\elvin\\Downloads\\",
+      "sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
+    }
+  }
+}

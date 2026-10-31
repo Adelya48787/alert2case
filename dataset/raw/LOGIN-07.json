@@ -1,0 +1,20 @@
+{
+  "source": "wazuh",
+  "payload": {
+    "id": "LOGIN-07",
+    "timestamp": "2026-11-02T11:33:00+00:00",
+    "rule": {
+      "id": "5715",
+      "level": 10,
+      "description": "sshd: authentication success from unusual location"
+    },
+    "agent": {
+      "name": "vpn-gw"
+    },
+    "data": {
+      "srcip": "1.0.0.1",
+      "dstuser": "gunel"
+    },
+    "full_log": "Accepted password for gunel from 1.0.0.1 port 52144 ssh2"
+  }
+}

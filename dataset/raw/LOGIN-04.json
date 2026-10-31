@@ -1,0 +1,20 @@
+{
+  "source": "wazuh",
+  "payload": {
+    "id": "LOGIN-04",
+    "timestamp": "2026-11-02T11:14:00+00:00",
+    "rule": {
+      "id": "5715",
+      "level": 10,
+      "description": "sshd: authentication success from unusual location"
+    },
+    "agent": {
+      "name": "vpn-gw"
+    },
+    "data": {
+      "srcip": "46.247.61.234",
+      "dstuser": "teymur"
+    },
+    "full_log": "Accepted password for teymur from 46.247.61.234 port 52144 ssh2"
+  }
+}

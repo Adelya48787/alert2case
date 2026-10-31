@@ -1,0 +1,13 @@
+alert_id,alert_type,ioc,user,host,src_ip,file_name,note
+URL-01,suspicious_url,hxxp://wicar[.]org/data/eicar[.]com,teymur,WS-021,10.0.4.21,,target=malicious; source=wicar; test_malware=eicar_standard; provider_snapshots=collected
+URL-02,suspicious_url,hxxp://182[.]117[.]40[.]248:59279/i,aysel,WS-022,10.0.4.22,,target=malicious; source=urlhaus; threat=Mozi; provider_snapshots=collected
+URL-03,suspicious_url,hxxp://111[.]88[.]7[.]48:39379/i,kamran,WS-023,10.0.4.23,,target=malicious; source=urlhaus; threat=Mozi; provider_snapshots=collected
+URL-04,suspicious_url,hxxp://123[.]13[.]79[.]26:33158/bin[.]sh,gunel,WS-024,10.0.4.24,,target=malicious; source=urlhaus; threat=Mozi; provider_snapshots=collected
+URL-05,suspicious_url,hxxps://google[.]com/,samir,WS-025,10.0.4.25,,target=clean; source=tranco; rank=1; provider_snapshots=collected
+URL-06,suspicious_url,hxxps://cloudflare[.]com/,leysan,WS-026,10.0.4.26,,target=clean; source=tranco; rank=2; provider_snapshots=collected
+URL-07,suspicious_url,hxxps://microsoft[.]com/,murad,WS-027,10.0.4.27,,target=clean; source=tranco; rank=10; provider_snapshots=collected
+URL-08,suspicious_url,hxxps://wikipedia[.]org/,elvin,WS-028,10.0.4.28,,target=clean; source=tranco; rank=12; provider_snapshots=collected
+URL-09,suspicious_url,hxxps://camera-office[.]hopto[.]org/,analyst-test,WS-029,10.0.4.29,,target=uncertain; dynamic_dns=no-ip_hopto; provider_snapshots=collected
+URL-10,suspicious_url,hxxps://dev-tunnel[.]ngrok-free[.]app/,analyst-test,WS-030,10.0.4.30,,target=uncertain; dynamic_dns=ngrok_tunnel; provider_snapshots=collected
+URL-11,suspicious_url,hxxps://backup-storage[.]duckdns[.]org/,analyst-test,WS-031,10.0.4.31,,target=uncertain; dynamic_dns=duckdns; provider_snapshots=collected
+URL-12,suspicious_url,hxxps://home-iot[.]ddns[.]net/api/v1,analyst-test,WS-032,10.0.4.32,,target=uncertain; dynamic_dns=no-ip; provider_snapshots=collected

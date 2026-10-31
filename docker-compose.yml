@@ -54,6 +54,35 @@ services:
     environment:
       MP_SMTP_DISABLE_RDNS: "true"
 
+  api:
+    build: { context: ., dockerfile: Dockerfile.dev }
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file: .env
+    environment: &app_env
+      DATABASE_URL: postgresql://soc:${POSTGRES_PASSWORD}@postgres:5432/alert2case
+      REDIS_URL: redis://redis:6379/0
+      THEHIVE_URL: ${THEHIVE_URL:-http://thehive:9000}
+      SMTP_HOST: mailpit
+    volumes: [".:/code"]
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [soc_net]
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile.dev }
+    command: python -m app.worker
+    env_file: .env
+    environment: *app_env
+    volumes: [".:/code"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [soc_net]
+
   cassandra:
     image: cassandra:${CASSANDRA_VERSION:?}
     profiles: ["thehive"]
