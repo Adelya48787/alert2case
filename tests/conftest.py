@@ -1,8 +1,8 @@
 import os
 
 # app.config import olunan anda Settings() yaradılır: test dəyərləri ondan əvvəl qoyulur
-os.environ.setdefault("WEBHOOK_HMAC_SECRET", "test-secret")
-os.environ.setdefault("ADMIN_TOKEN", "test-admin")
+os.environ["WEBHOOK_HMAC_SECRET"] = "test-secret"
+os.environ["ADMIN_TOKEN"] = "test-admin"
 
 import json  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
