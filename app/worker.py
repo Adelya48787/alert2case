@@ -66,7 +66,7 @@ async def main() -> None:
     await queue.ensure_group()
     sem = asyncio.Semaphore(CONCURRENCY)
     reclaim = asyncio.create_task(reclaim_loop())
-    asyncio.create_task(reenrich.loop())
+    _tasks.add(asyncio.create_task(reenrich.loop()))
     _tasks.add(reclaim)
     log.info("worker %s başladı", CONSUMER)
 
