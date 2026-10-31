@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     vt_api_key: str = ""
     abuseipdb_api_key: str = ""
     otx_api_key: str = ""
+    vt_base_url: str = "https://www.virustotal.com/api/v3"
+    abuseipdb_base_url: str = "https://api.abuseipdb.com/api/v2"
+    otx_base_url: str = "https://otx.alienvault.com/api/v1"
     case_backend: str = "file"  # file | thehive
     thehive_url: str = "http://localhost:9000"
     thehive_api_key: str = ""

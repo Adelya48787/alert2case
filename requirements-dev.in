@@ -8,3 +8,4 @@ pandas
 tabulate
 matplotlib
 hypothesis
+fakeredis[lua]
