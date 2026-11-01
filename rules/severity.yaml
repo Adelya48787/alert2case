@@ -1,0 +1,48 @@
+# Qərar qaydaları. Yuxarıdan aşağı yoxlanılır, ilk uyğun gələn qayda tətbiq olunur.
+# Operatorlar: eq, ne, gt, gte, lt, lte, in, exists
+# Bu fayl qaydanın NİYYƏTİNİ deyir. Auto-close-un təhlükəsizliyini qoruyucular yoxlayır (app/rules/guards.py).
+version: "2026.11.1"
+rules:
+  - id: R01-ENRICH-FAILED
+    description: Heç bir intel mənbəyi cavab vermədi. Fail-safe, insan baxsın.
+    when:
+      enrichment.status: {eq: failed}
+    then: {verdict: unknown, severity_id: 4, action: create_case}
+  - id: R02-ALLOWLIST
+    description: Bütün IOC-lar təsdiqlənmiş allowlist-dədir və intel siqnalı zəifdir.
+    when:
+      context.allowlisted: {eq: true}
+      enrichment.reputation_score: {lt: 30}
+    then: {verdict: clean, severity_id: 1, action: auto_close}
+  - id: R03-HASH-MALICIOUS
+    description: Zərərli fayl hash-ı.
+    when:
+      alert_type: {eq: malicious_hash}
+      enrichment.verdict: {eq: malicious}
+    then: {verdict: malicious, severity_id: 5, action: create_case}
+  - id: R04-MALICIOUS
+    description: Intel IOC-u zərərli sayır.
+    when:
+      enrichment.verdict: {eq: malicious}
+    then: {verdict: malicious, severity_id: 4, action: create_case}
+  - id: R05-PRIV-LOGIN
+    description: İmtiyazlı hesaba şübhəli və ya naməlum mənbədən giriş.
+    when:
+      alert_type: {eq: suspicious_login}
+      context.user_privileged: {eq: true}
+      enrichment.verdict: {in: [suspicious, unknown]}
+    then: {verdict: suspicious, severity_id: 4, action: create_case}
+  - id: R06-SUSPICIOUS
+    description: Zəif və ya ziddiyyətli intel siqnalı.
+    when:
+      enrichment.verdict: {eq: suspicious}
+    then: {verdict: suspicious, severity_id: 3, action: create_case}
+  - id: R07-CLEAN
+    description: Bütün mənbələr təmiz deyir.
+    when:
+      enrichment.verdict: {eq: clean}
+    then: {verdict: clean, severity_id: 1, action: auto_close}
+  - id: R99-DEFAULT
+    description: Heç bir qayda uyğun gəlmədi. Bilinmir, insan baxsın.
+    when: {}
+    then: {verdict: unknown, severity_id: 3, action: create_case}
