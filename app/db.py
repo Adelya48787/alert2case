@@ -80,3 +80,63 @@ async def alerts_needing_reenrich(hours: int = 24, limit: int = 50) -> list:
         hours,
         limit,
     )
+
+
+# ---------- Phase 4: qərarlar və case-lər ----------
+async def save_decision(a: NormalizedAlert, d) -> None:
+    p = await pool()
+    await p.execute(
+        """INSERT INTO decisions (alert_id, verdict, severity_id, priority, action, rule_id,
+                                  rule_version, reasons, shadow, decided_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)""",
+        a.alert_id,
+        d.verdict,
+        int(d.severity_id),
+        d.priority,
+        d.action,
+        d.rule_id,
+        d.rule_version,
+        d.reasons,
+        d.shadow,
+        d.decided_at,
+    )
+
+
+async def save_case(a: NormalizedAlert, ref) -> None:
+    p = await pool()
+    await p.execute(
+        """INSERT INTO cases (alert_id, fingerprint, backend, case_id, case_url)
+           VALUES ($1, $2, $3, $4, $5) ON CONFLICT (alert_id) DO NOTHING""",
+        a.alert_id,
+        a.fingerprint,
+        ref.backend,
+        ref.case_id,
+        ref.url,
+    )
+
+
+async def find_recent_case(fingerprint: str, hours: int = 24) -> dict | None:
+    p = await pool()
+    row = await p.fetchrow(
+        """SELECT backend, case_id, case_url AS url FROM cases
+           WHERE fingerprint = $1 AND created_at > now() - make_interval(hours => $2)
+           ORDER BY created_at DESC LIMIT 1""",
+        fingerprint,
+        hours,
+    )
+    return dict(row) if row else None
+
+
+async def load_alert(alert_id) -> dict | None:
+    p = await pool()
+    return await p.fetchval("SELECT doc FROM alerts WHERE alert_id = $1::uuid", str(alert_id))
+
+
+async def timeline(alert_id) -> list[dict]:
+    p = await pool()
+    rows = await p.fetch(
+        """SELECT ts, stage, event, actor, payload FROM audit_log
+           WHERE correlation_id = $1::uuid ORDER BY id""",
+        str(alert_id),
+    )
+    return [dict(r) for r in rows]
