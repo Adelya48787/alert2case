@@ -3,6 +3,10 @@ import os
 # app.config import olunan anda Settings() yaradılır: test dəyərləri ondan əvvəl qoyulur
 os.environ["WEBHOOK_HMAC_SECRET"] = "test-secret"
 os.environ["ADMIN_TOKEN"] = "test-admin"
+# testlər heç vaxt real intel API-yə sorğu atmasın: .env-dəki açarlar burada boşaldılır
+os.environ["VT_API_KEY"] = ""
+os.environ["ABUSEIPDB_API_KEY"] = ""
+os.environ["OTX_API_KEY"] = ""
 
 import json  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
