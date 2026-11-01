@@ -1,0 +1,13 @@
+# Təsdiqlənmiş istisnalar. Hər qeyd PR ilə əlavə olunur; owner, reason və expires_at məcburidir.
+# Müddəti keçmiş qeyd tətbiq olunmur.
+entries:
+  - type: ip_cidr
+    value: 203.0.113.10/32          # LOGIN-08: korporativ VPN statik çıxış IP-si (lab, RFC 5737)
+    owner: elvin
+    reason: corporate VPN egress
+    expires_at: 2027-06-30
+  - type: domain
+    value: example-corp.az        # lab company domain-i (unit testlə yoxlanılır)
+    owner: adile
+    reason: company domain
+    expires_at: 2027-06-30
