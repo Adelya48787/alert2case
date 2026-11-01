@@ -1,0 +1,15 @@
+user,is_privileged,is_vip,department
+adile,false,false,staff
+analyst-test,false,false,staff
+aysel,false,false,staff
+ceo.office,false,true,management
+elcin,false,false,staff
+elcin.admin,true,false,it
+elvin,false,false,staff
+gunel,false,false,staff
+kamran,false,false,staff
+leysan,false,false,staff
+murad,false,false,staff
+samir,false,false,staff
+svc-backup,true,false,it
+teymur,false,false,staff
