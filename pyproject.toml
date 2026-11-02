@@ -8,7 +8,7 @@ addopts = "-q"
 [tool.coverage.run]
 source = ["app"]
 # I/O adapterləri real Redis/PostgreSQL ilə integration testdə (6.4) yoxlanılır
-omit = ["app/worker.py", "app/db.py", "app/queue.py"]
+omit = ["app/worker.py", "app/db.py", "app/queue.py", "app/enrich/reenrich.py"]
 
 [tool.ruff]
 line-length = 110

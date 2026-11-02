@@ -1,0 +1,20 @@
+# Test mühiti: real intel API-lər əvəzinə WireMock, arada Toxiproxy (şəbəkə xətaları).
+# İşə sal: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+# Normal rejimə qayıt: docker compose up -d --force-recreate worker
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.1
+    volumes: ["./wiremock:/home/wiremock:ro"]
+    networks: [soc_net]
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports: ["127.0.0.1:8474:8474"]
+    networks: [soc_net]
+  worker:
+    environment:
+      VT_BASE_URL: http://toxiproxy:8666/vt
+      ABUSEIPDB_BASE_URL: http://toxiproxy:8666/ab
+      OTX_BASE_URL: http://toxiproxy:8666/otx
+      VT_API_KEY: test
+      ABUSEIPDB_API_KEY: test
+      OTX_API_KEY: test

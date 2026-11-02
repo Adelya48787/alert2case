@@ -1,0 +1,14 @@
+# Enrichment nəticələrinin birləşdirilməsi. Phase 5-də tuner bu faylı PR ilə yeniləyir.
+version: "2026.11.1"
+providers:
+  virustotal: {weight: 0.5, strong: true, weak_signal: 20}
+  abuseipdb: {weight: 0.3, strong: true, weak_signal: 25}
+  otx: {weight: 0.2, strong: false}
+blend_max: 0.6 # yekun = 0.6 × max(güclü mənbələr) + 0.4 × çəkili ortalama
+thresholds:
+  malicious: 70
+  suspicious: 30
+min_confidence_clean: 0.67 # "clean" demək üçün gözlənilən cavabların ən az 2/3-i
+conflict: # yalnız güclü mənbələr arasında
+  high: 70
+  low: 5

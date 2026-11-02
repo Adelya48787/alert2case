@@ -1,0 +1,15 @@
+hostname,criticality,owner
+DC-01,crown_jewel,it-infra
+PAY-01,crown_jewel,finance
+vpn-gw,high,it-infra
+WS-014,medium,it-ops
+WS-021,medium,it-ops
+WS-025,medium,it-ops
+WS-028,medium,it-ops
+WS-031,medium,it-ops
+WS-033,medium,it-ops
+WS-034,medium,it-ops
+WS-040,medium,it-ops
+WS-041,medium,it-ops
+WS-042,medium,it-ops
+WS-043,medium,it-ops

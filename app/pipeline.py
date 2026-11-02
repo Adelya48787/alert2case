@@ -9,6 +9,7 @@ from app.audit.log import audit
 from app.config import settings
 from app.errors import PermanentError
 from app.normalize import normalize
+from app.enrich.service import enrich
 
 log = logging.getLogger("pipeline")
 
@@ -36,5 +37,22 @@ async def process(source: str, body: str, received_at: datetime) -> None:
         "ok",
         {"alert_type": alert.alert_type, "observables": len(alert.observables)},
     )
-    # Phase 3: enrich · Phase 4: decide, act, notify · Phase 5: correlate
-    await db.save_alert(alert, "normalized")
+    alert.enrichment = await enrich(alert)
+    e = alert.enrichment
+    await audit(
+        alert.alert_id,
+        "enrich",
+        e.status,
+        {
+            "score": e.reputation_score,
+            "confidence": e.confidence,
+            "conflict": e.conflict,
+            "verdict": e.verdict,
+            "providers": [
+                {k: p.get(k) for k in ("provider", "ioc_type", "status", "score", "cached", "latency_ms")}
+                for p in e.providers
+            ],
+        },
+    )
+    # Phase 4: decide, act, notify · Phase 5: correlate
+    await db.save_alert(alert, "enriched")
