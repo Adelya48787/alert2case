@@ -3,6 +3,7 @@
 İşə sal: python -m app.worker
 """
 
+from app.audit.logging_setup import setup_logging
 from app import pipeline
 from prometheus_client import start_http_server
 from app.audit.metrics import DLQ_DEPTH
@@ -20,7 +21,7 @@ from app.errors import PermanentError
 from app.pipeline import process
 from app.enrich import reenrich
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+setup_logging()
 log = logging.getLogger("worker")
 
 CONSUMER = f"{socket.gethostname()}-{os.getpid()}"

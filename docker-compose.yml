@@ -136,6 +136,25 @@ services:
     restart: unless-stopped
     networks: [soc_net]
 
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:?}
+    profiles: ["obs"]
+    volumes: ["./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["127.0.0.1:9090:9090"]
+    networks: [soc_net]
+
+  grafana:
+    image: grafana/grafana-oss:${GRAFANA_VERSION:?}
+    profiles: ["obs"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: [prometheus]
+    networks: [soc_net]
+
 volumes:
   pg_data:
   redis_data:

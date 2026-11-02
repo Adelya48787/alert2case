@@ -1,3 +1,4 @@
+from prometheus_client import make_asgi_app
 import hashlib
 import hmac
 from datetime import datetime, timezone
@@ -58,3 +59,6 @@ async def dlq_replay(count: int = 50):
         await r.xdel(queue.STREAM_DLQ, msg_id)
         moved += 1
     return {"replayed": moved}
+
+
+app.mount("/metrics", make_asgi_app())
