@@ -56,6 +56,8 @@ mdurl==0.1.2
     # via markdown-it-py
 opentelemetry-api==1.45.2
     # via fastapi
+prometheus-client==0.26.0
+    # via -r requirements.in
 psycopg==3.3.6
     # via -r requirements.in
 psycopg-binary==3.3.6

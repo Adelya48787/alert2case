@@ -14,3 +14,4 @@ python-dotenv
 tenacity
 pyyaml
 aiosmtplib
+prometheus-client

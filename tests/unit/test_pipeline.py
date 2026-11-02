@@ -1,57 +1,128 @@
-"""Pipeline məntiqi: baza və audit saxtası ilə (real baza 6.4-də)."""
+"""Pipeline-ın mərhələləri birlikdə: baza, audit və intel saxtalaşdırılır."""
 
 import json
+from datetime import datetime, timezone
 from uuid import uuid4
 
+import fakeredis
 import pytest
 
-from app import db, pipeline
+from app import db, pipeline, queue
 from app.audit.log import GENESIS, row_hash
+from app.case import file_backend
+from app.config import settings
 from app.errors import PermanentError
 from app.schemas.alert import Enrichment
 
+AUDIT: list[tuple] = []
+CASES: dict[str, dict] = {}
 
-@pytest.fixture
-def fake(monkeypatch):
-    calls = {"audit": [], "saved": [], "dup": False}
 
-    async def upsert(alert, window_s):
-        return (uuid4() if calls["dup"] else alert.alert_id), calls["dup"]
-
-    async def save(alert, status):
-        calls["saved"].append(status)
+@pytest.fixture(autouse=True)
+def fakes(monkeypatch, tmp_path):
+    AUDIT.clear()
+    CASES.clear()
+    monkeypatch.setattr(queue, "_client", fakeredis.FakeAsyncRedis(decode_responses=True))
+    monkeypatch.setattr(file_backend, "CASE_DIR", tmp_path)
+    monkeypatch.setattr(settings, "case_backend", "file")
+    monkeypatch.setattr(settings, "shadow_mode", False)
+    monkeypatch.setattr(settings, "auto_close_enabled", True)
+    monkeypatch.setattr(settings, "slack_webhook_url", "")
+    monkeypatch.setattr(pipeline, "QA_SAMPLE_RATE", 0.0)
 
     async def audit(cid, stage, event, payload=None, actor="system"):
-        calls["audit"].append((stage, event))
+        AUDIT.append((stage, event))
 
+    async def upsert(a, w):
+        return a.alert_id, False
+
+    async def save_case(a, ref):
+        CASES[a.fingerprint] = {"backend": ref.backend, "case_id": ref.case_id, "url": ref.url}
+
+    async def find_case(fp, hours=24):
+        return CASES.get(fp)
+
+    async def noop(*a, **k):
+        return None
+
+    for mod in (pipeline, __import__("app.correlation.engine", fromlist=["x"])):
+        monkeypatch.setattr(mod, "audit", audit)
     monkeypatch.setattr(db, "upsert_alert", upsert)
-    monkeypatch.setattr(db, "save_alert", save)
-    monkeypatch.setattr(pipeline, "audit", audit)
+    monkeypatch.setattr(db, "save_case", save_case)
+    monkeypatch.setattr(db, "find_recent_case", find_case)
+    for name in ("save_alert", "save_decision", "save_link"):
+        monkeypatch.setattr(db, name, noop, raising=False)
 
-    async def enrich(alert):
-        return Enrichment(status="ok", verdict="clean", reputation_score=1, confidence=1.0)
+    async def no_mail(subject, text):
+        return None
 
-    monkeypatch.setattr(pipeline, "enrich", enrich)
-    return calls
+    monkeypatch.setattr("app.notify.service._email", no_mail)
 
 
-async def test_new_alert_is_audited_and_saved(fake, raw_doc, now):
+def fake_enrich(verdict, score, status="ok"):
+    async def _enrich(alert):
+        return Enrichment(status=status, verdict=verdict, reputation_score=score, confidence=1.0)
+
+    return _enrich
+
+
+async def run(raw_doc, name, monkeypatch, verdict, score, status="ok"):
+    monkeypatch.setattr(pipeline, "enrich", fake_enrich(verdict, score, status))
+    doc = raw_doc(name)
+    await pipeline.process(doc["source"], json.dumps(doc["payload"]), datetime.now(timezone.utc))
+
+
+async def test_malicious_hash_creates_case_and_notifies(raw_doc, monkeypatch):
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    stages = [s for s, _ in AUDIT]
+    assert stages == ["ingest", "normalize", "enrich", "decide", "act", "notify"]
+    assert ("act", "case_created") in AUDIT and ("notify", "sent") in AUDIT
+
+
+async def test_clean_alert_closed_without_case(raw_doc, monkeypatch):
+    await run(raw_doc, "URL-03", monkeypatch, "clean", 1)
+    assert ("act", "closed_auto") in AUDIT and not CASES
+
+
+async def test_failed_enrichment_never_closed(raw_doc, monkeypatch):
+    await run(raw_doc, "URL-04", monkeypatch, "unknown", None, status="failed")
+    assert ("decide", "create_case") in AUDIT and ("act", "case_created") in AUDIT
+
+
+async def test_same_fingerprint_reuses_case(raw_doc, monkeypatch):
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    first = dict(CASES)
+    AUDIT.clear()
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert CASES == first
+
+
+async def test_case_backend_down_goes_to_case_dlq(raw_doc, monkeypatch):
+    from app.case.base import CaseError
+
+    async def boom(self, a, d):
+        raise CaseError("TheHive down")
+
+    monkeypatch.setattr(file_backend.FileBackend, "create", boom)
+    await run(raw_doc, "HASH-03", monkeypatch, "malicious", 89)
+    assert ("act", "case_failed") in AUDIT
+    assert await queue.get_redis().xlen(pipeline.CASES_DLQ) == 1
+
+
+async def test_duplicate_is_not_processed_again(raw_doc, monkeypatch):
+    async def dup(a, w):
+        return a.alert_id, True
+
+    monkeypatch.setattr(db, "upsert_alert", dup)
     doc = raw_doc("HASH-01")
-    await pipeline.process("edr", json.dumps(doc["payload"]), now)
-    assert fake["audit"] == [("ingest", "received"), ("normalize", "ok"), ("enrich", "ok")]
-    assert fake["saved"] == ["enriched"]
+    await pipeline.process(doc["source"], json.dumps(doc["payload"]), datetime.now(timezone.utc))
+    assert AUDIT == [("normalize", "duplicate")]
 
 
-async def test_duplicate_is_not_saved_again(fake, raw_doc, now):
-    fake["dup"] = True
-    await pipeline.process("edr", json.dumps(raw_doc("HASH-01")["payload"]), now)
-    assert fake["audit"] == [("normalize", "duplicate")] and fake["saved"] == []
-
-
-async def test_non_json_is_permanent(fake, now):
+async def test_non_json_is_permanent():
     with pytest.raises(PermanentError, match="JSON deyil"):
-        await pipeline.process("edr", "not-json", now)
-    assert fake["audit"] == []
+        await pipeline.process("edr", "not-json", datetime.now(timezone.utc))
+    assert AUDIT == []
 
 
 def test_audit_chain_detects_tampering(now):
