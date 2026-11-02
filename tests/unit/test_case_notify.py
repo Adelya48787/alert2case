@@ -118,7 +118,6 @@ async def test_p3_p4_not_notified():
     assert await notify.notify(a, decide(a), None) == []
 
 
-@pytest.mark.skip(reason="4.7")
 def test_secrets_masked_in_logs(monkeypatch, caplog):
     import logging
     from app.audit import logging_setup
