@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     slack_webhook_url: str = ""
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    telegram_api_base: str = "https://api.telegram.org"
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     email_to: str = "soc-team@lab.local"
