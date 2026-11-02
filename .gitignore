@@ -231,3 +231,4 @@ __marimo__/
 .baseline_order_*.txt
 dataset/normalized/*.json
 .vscode/
+n8n/credentials.local.json
