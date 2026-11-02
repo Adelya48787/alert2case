@@ -127,3 +127,44 @@ def test_secrets_masked_in_logs(monkeypatch, caplog):
     rec = logging.LogRecord("t", logging.INFO, "", 0, "url ?apikey=%s", ("SECRETKEY1234567890",), None)
     f.filter(rec)
     assert "SECRETKEY1234567890" not in rec.getMessage() and "SECR***" in rec.getMessage()
+
+
+# ---------- 4.8: Telegram, email xətası, Redis-siz throttle ----------
+@respx.mock
+async def test_telegram_html_escaped(monkeypatch):
+    monkeypatch.setattr(settings, "slack_webhook_url", "")
+    monkeypatch.setattr(settings, "telegram_bot_token", "123:abc")
+    monkeypatch.setattr(settings, "telegram_chat_id", "-100")
+    monkeypatch.setattr(settings, "telegram_api_base", "https://tg.test")
+    route = respx.post("https://tg.test/bot123:abc/sendMessage").respond(200, json={"ok": True})
+    a, d = mal()
+    d = d.model_copy(update={"reasons": ["<script>&"]})
+    assert await notify.notify(a, d, None) == ["telegram", "email"]
+    body = json.loads(route.calls[0].request.content)
+    assert body["parse_mode"] == "HTML" and body["chat_id"] == "-100"
+    assert "&lt;script&gt;&amp;" in body["text"] and "<script>" not in body["text"]
+
+
+@respx.mock
+async def test_all_channels_down_returns_empty(monkeypatch):
+    respx.post("https://hooks.slack.test/x").respond(500)
+
+    async def mail_down(subject, text):
+        raise OSError("smtp down")
+
+    monkeypatch.setattr(notify, "_email", mail_down)
+    a, d = mal()
+    assert await notify.notify(a, d, None) == []
+
+
+@respx.mock
+async def test_redis_down_disables_throttle(monkeypatch):
+    class DeadRedis:
+        async def set(self, *a, **k):
+            raise ConnectionError("redis down")
+
+    monkeypatch.setattr(queue, "_client", DeadRedis())
+    respx.post("https://hooks.slack.test/x").respond(200, text="ok")
+    a, d = mal()
+    assert await notify.notify(a, d, None) == ["slack", "email"]
+    assert await notify.notify(a, d, None) == ["slack", "email"]  # çox mesaj > heç mesaj
