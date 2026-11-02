@@ -13,3 +13,4 @@ typer
 python-dotenv
 tenacity
 pyyaml
+aiosmtplib
