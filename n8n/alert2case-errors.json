@@ -1,0 +1,58 @@
+{
+  "id": "a2cErrorFlow0001",
+  "name": "alert2case errors",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "184a62a6-c637-5ca9-8c5e-5e7a345d21cf",
+      "name": "Xəta baş verdi",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "n8n@lab.local",
+        "toEmail": "soc-team@lab.local",
+        "subject": "=[n8n] {{ $json.workflow.name }}: {{ $json.execution.lastNodeExecuted }} uğursuz oldu",
+        "emailFormat": "text",
+        "text": "=Workflow: {{ $json.workflow.name }}\nNode: {{ $json.execution.lastNodeExecuted }}\nXəta: {{ $json.execution.error.message }}\nExecution: {{ $json.execution.url }}",
+        "options": {}
+      },
+      "id": "10adb27f-f43f-5e59-a853-343bc1139bbb",
+      "name": "Email (Mailpit)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "a2cMailpitSmtp1",
+          "name": "Mailpit SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Xəta baş verdi": {
+      "main": [
+        [
+          {
+            "node": "Email (Mailpit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

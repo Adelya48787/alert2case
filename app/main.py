@@ -1,11 +1,14 @@
+from uuid import UUID
+from prometheus_client import make_asgi_app
 import hashlib
 import hmac
 from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
-from app import queue
+from app import db, pipeline, queue
 from app.config import settings
+from app.stages import build_router
 
 app = FastAPI(title="alert2case")
 
@@ -58,3 +61,22 @@ async def dlq_replay(count: int = 50):
         await r.xdel(queue.STREAM_DLQ, msg_id)
         moved += 1
     return {"replayed": moved}
+
+
+# ---------- Phase 4: n8n mərhələləri, metrikalar, timeline, case DLQ ----------
+app.include_router(build_router(require_admin))
+app.mount("/metrics", make_asgi_app())
+
+
+@app.get("/alerts/{alert_id}/timeline", dependencies=[Depends(require_admin)])
+async def alert_timeline(alert_id: UUID):
+    rows = await db.timeline(alert_id)
+    if not rows:
+        raise HTTPException(status_code=404, detail="alert tapılmadı")
+    t0 = rows[0]["ts"]
+    return [{"t_plus_s": round((r["ts"] - t0).total_seconds(), 3), **r} for r in rows]
+
+
+@app.post("/dlq/cases/replay", dependencies=[Depends(require_admin)])
+async def cases_replay():
+    return {"created": await pipeline.retry_pending_cases()}

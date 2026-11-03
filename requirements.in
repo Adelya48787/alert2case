@@ -13,3 +13,5 @@ typer
 python-dotenv
 tenacity
 pyyaml
+aiosmtplib
+prometheus-client
