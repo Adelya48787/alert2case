@@ -11,6 +11,8 @@ def blockers(alert: NormalizedAlert) -> list[str]:
     e, c = alert.enrichment, alert.context
     approved = bool(c.get("allowlisted"))  # allowlist insan tərəfindən təsdiqlənib
     out = []
+    if e.verdict == "malicious":  # qızıl qayda: qayda faylı nə desə də, zərərli alert bağlanmır
+        out.append("intel verdict-i malicious-dir")
     if e.status != "ok" and not approved:
         out.append(f"enrichment natamamdır ({e.status})")
     if e.confidence < MIN_CONFIDENCE and not approved:

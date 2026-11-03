@@ -136,3 +136,203 @@ def test_audit_chain_detects_tampering(now):
     assert row_hash(GENESIS, now, cid, "s", "e", "system", {"x": 1, "y": 2}) == row_hash(
         GENESIS, now, cid, "s", "e", "system", {"y": 2, "x": 1}
     )
+
+
+# ---------- 4.8: QA nümunəsi, korrelyasiya, case DLQ retry, bildiriş xətası ----------
+async def test_qa_sample_sends_closed_alert_to_human(raw_doc, monkeypatch):
+    monkeypatch.setattr(pipeline, "QA_SAMPLE_RATE", 1.0)
+    await run(raw_doc, "URL-03", monkeypatch, "clean", 1)
+    assert ("act", "closed_auto") in AUDIT and ("act", "qa_sampled") in AUDIT
+    assert len(CASES) == 1  # QA case-i yaranıb
+
+
+async def test_correlated_alert_is_linked_not_new_case(raw_doc, monkeypatch):
+    from app.case.base import CaseRef
+
+    comments = []
+
+    async def correlate(alert):
+        return CaseRef(backend="file", case_id="C-OLD", url="/x")
+
+    async def comment(self, ref, text):
+        comments.append((ref.case_id, text))
+
+    monkeypatch.setattr(pipeline, "correlate", correlate)
+    monkeypatch.setattr(file_backend.FileBackend, "comment", comment)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert ("act", "case_linked") in AUDIT and ("act", "case_created") not in AUDIT
+    assert comments[0][0] == "C-OLD" and "Korrelyasiya" in comments[0][1]
+
+
+async def test_related_cases_are_commented_and_linked(raw_doc, monkeypatch):
+    links = []
+
+    async def correlate(alert):
+        alert.context["related_cases"] = ["C-9"]
+        return None
+
+    async def save_link(alert_id, case_id, related):
+        links.append((case_id, related))
+
+    monkeypatch.setattr(pipeline, "correlate", correlate)
+    monkeypatch.setattr(db, "save_link", save_link, raising=False)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert links and links[0][1] == "C-9"
+
+
+async def _pending_alert(raw_doc, monkeypatch):
+    """Case backend çökür → alert cases.dlq-ya düşür; sənədini qaytarır."""
+    from app.case.base import CaseError
+
+    docs = {}
+    orig = file_backend.FileBackend.create
+
+    async def boom(self, a, d):
+        raise CaseError("down")
+
+    async def save_alert(a, status):
+        docs[str(a.alert_id)] = a.model_dump(mode="json")
+
+    async def load_alert(alert_id):
+        return docs.get(str(alert_id))
+
+    monkeypatch.setattr(db, "save_alert", save_alert)
+    monkeypatch.setattr(db, "load_alert", load_alert, raising=False)
+    monkeypatch.setattr(file_backend.FileBackend, "create", boom)
+    await run(raw_doc, "HASH-03", monkeypatch, "malicious", 89)
+    return docs, orig
+
+
+async def test_retry_pending_cases_creates_case_when_backend_is_back(raw_doc, monkeypatch):
+    docs, orig = await _pending_alert(raw_doc, monkeypatch)
+    assert await pipeline.retry_pending_cases() == 0  # backend hələ də işləmir
+    assert await queue.get_redis().xlen(pipeline.CASES_DLQ) == 1
+
+    monkeypatch.setattr(file_backend.FileBackend, "create", orig)
+    AUDIT.clear()
+    assert await pipeline.retry_pending_cases() == 1
+    assert await queue.get_redis().xlen(pipeline.CASES_DLQ) == 0
+    assert ("act", "case_created") in AUDIT
+
+
+async def test_retry_pending_drops_unknown_alert(monkeypatch):
+    async def load_alert(alert_id):
+        return None
+
+    monkeypatch.setattr(db, "load_alert", load_alert, raising=False)
+    await queue.get_redis().xadd(pipeline.CASES_DLQ, {"alert_id": str(uuid4()), "error": "x"})
+    assert await pipeline.retry_pending_cases() == 0
+    assert await queue.get_redis().xlen(pipeline.CASES_DLQ) == 0
+
+
+async def test_p1_with_no_working_channel_is_audited_as_failed(raw_doc, monkeypatch):
+    async def mail_down(subject, text):
+        raise OSError("smtp down")
+
+    monkeypatch.setattr("app.notify.service._email", mail_down)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert ("notify", "failed") in AUDIT
+
+
+# ---------- 4.8: n8n /stage/* yolu worker ilə eyni qərarı verir ----------
+async def _client():
+    import httpx
+
+    from app import main
+
+    return httpx.AsyncClient(transport=httpx.ASGITransport(app=main.app), base_url="http://t")
+
+
+@pytest.fixture
+def admin(monkeypatch):
+    monkeypatch.setattr(settings, "admin_token", "test-admin")
+    return {"X-Admin-Token": "test-admin"}
+
+
+async def test_n8n_stages_give_same_decision_as_worker(raw_doc, monkeypatch, admin):
+    decisions = []
+
+    async def save_decision(a, d):
+        decisions.append((d.rule_id, d.verdict, d.action, d.priority))
+
+    monkeypatch.setattr(db, "save_decision", save_decision)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)  # worker yolu
+
+    doc = raw_doc("HASH-01")
+    async with await _client() as c:
+        r = await c.post(
+            "/stage/normalize", json={"source": doc["source"], "payload": doc["payload"]}, headers=admin
+        )
+        assert r.status_code == 200 and r.json()["duplicate"] is False
+        alert = r.json()["alert"]
+        for step in ("enrich", "decide"):
+            r = await c.post(f"/stage/{step}", json=alert, headers=admin)
+            assert r.status_code == 200, r.text
+            alert = r.json()
+        r = await c.post("/stage/act", json=alert, headers=admin)
+        assert r.status_code == 200 and r.json()["case"] is not None
+        r = await c.post("/stage/notify", json=r.json(), headers=admin)
+        assert r.status_code == 200 and "channels" in r.json()
+
+    assert len(decisions) == 2 and decisions[0] == decisions[1]
+
+
+async def test_stages_require_admin_token(admin):
+    async with await _client() as c:
+        r = await c.post("/stage/normalize", json={"source": "edr", "payload": {}})
+    assert r.status_code == 403
+
+
+async def test_stage_normalize_bad_payload_is_422(admin):
+    async with await _client() as c:
+        r = await c.post("/stage/normalize", json={"source": "splunk", "payload": {}}, headers=admin)
+    assert r.status_code == 422
+
+
+async def test_stage_normalize_duplicate(raw_doc, monkeypatch, admin):
+    async def dup(a, w):
+        return a.alert_id, True
+
+    monkeypatch.setattr(db, "upsert_alert", dup)
+    doc = raw_doc("HASH-01")
+    async with await _client() as c:
+        r = await c.post(
+            "/stage/normalize", json={"source": doc["source"], "payload": doc["payload"]}, headers=admin
+        )
+    assert r.json() == {"duplicate": True, "alert": None}
+
+
+async def test_timeline_endpoint(monkeypatch, admin):
+    from datetime import timedelta
+
+    t0 = datetime.now(timezone.utc)
+    rows = [
+        {"ts": t0, "stage": "ingest", "event": "received", "actor": "system", "payload": {}},
+        {
+            "ts": t0 + timedelta(seconds=1.5),
+            "stage": "act",
+            "event": "case_created",
+            "actor": "system",
+            "payload": {},
+        },
+    ]
+
+    async def timeline(alert_id):
+        return rows if str(alert_id).endswith("1") else []
+
+    monkeypatch.setattr(db, "timeline", timeline, raising=False)
+    async with await _client() as c:
+        ok = await c.get("/alerts/00000000-0000-4000-8000-000000000001/timeline", headers=admin)
+        missing = await c.get("/alerts/00000000-0000-4000-8000-000000000002/timeline", headers=admin)
+    assert [e["t_plus_s"] for e in ok.json()] == [0.0, 1.5]
+    assert missing.status_code == 404
+
+
+async def test_cases_replay_endpoint(monkeypatch, admin):
+    async def retry():
+        return 2
+
+    monkeypatch.setattr(pipeline, "retry_pending_cases", retry)
+    async with await _client() as c:
+        r = await c.post("/dlq/cases/replay", headers=admin)
+    assert r.json() == {"created": 2}
