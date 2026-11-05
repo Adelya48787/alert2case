@@ -1,0 +1,28 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-06T09:14:00+00:00",
+    "event": {
+      "id": "DEMO-C1-B",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxp://secure-login-verify[.]example/m365/auth"
+    },
+    "source": {
+      "ip": "10.0.5.33"
+    },
+    "host": {
+      "name": "WS-033"
+    },
+    "user": {
+      "name": "murad"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}
