@@ -180,3 +180,67 @@ async def test_thehive_webhook_ignores_non_closing_update():
             headers={"X-Feedback-Token": "fb-token"},
         )
     assert r.json() == {"ignored": True} and SAVED == []
+
+
+# ---------- TheHive 5.8 real formatı: status + stage, resolutionStatus boş ----------
+@pytest.mark.parametrize(
+    "status,verdict",
+    [
+        ("TruePositive", "malicious"),
+        ("FalsePositive", "clean"),
+        ("Indeterminate", "suspicious"),
+        ("Other", "suspicious"),
+    ],
+)
+async def test_thehive5_status_field(status, verdict):
+    body = {
+        "operation": "update",
+        "objectType": "case",
+        "object": {
+            "_id": "~42",
+            "status": status,
+            "stage": "Closed",
+            "resolutionStatus": None,
+            "severity": 4,
+            "assignee": "svc-alert2case@soc.lab",
+            "summary": "real 5.8 payload",
+        },
+    }
+    fb = await from_thehive(body)
+    assert (fb.human_verdict, fb.human_severity, fb.analyst) == (verdict, 5, "svc-alert2case@soc.lab")
+
+
+@pytest.mark.parametrize("status", ["New", "InProgress", "Open", "Duplicated"])
+async def test_thehive5_open_or_duplicate_is_ignored(status):
+    body = {
+        "object": {"_id": "~42", "status": status, "stage": "Open" if status != "Duplicated" else "Closed"}
+    }
+    assert await from_thehive(body) is None
+
+
+async def test_real_thehive58_webhook_v0_payload():
+    # TheHive 5.8.1 webhook (version 0) case bağlananda real göndərdiyi forma
+    body = {
+        "operation": "update",
+        "objectType": "Case",
+        "objectId": "~42",
+        "details": {"status": "FalsePositive", "stage": "Closed", "resolutionStatus": None},
+        "object": {
+            "_id": "~42",
+            "status": "Resolved",
+            "stage": "Closed",
+            "extendedStatus": "FalsePositive",
+            "resolutionStatus": None,
+            "severity": 4,
+            "assignee": "svc-alert2case@soc.lab",
+            "summary": "real payload",
+        },
+    }
+    fb = await from_thehive(body)
+    assert (fb.human_verdict, fb.analyst, fb.comment) == ("clean", "svc-alert2case@soc.lab", "real payload")
+
+
+async def test_resolved_without_known_result_is_ignored():
+    assert (
+        await from_thehive({"object": {"_id": "~42", "status": "Resolved", "extendedStatus": None}}) is None
+    )

@@ -106,15 +106,30 @@ async def stage_correlate(alert: NormalizedAlert) -> CaseRef | None:
         return await correlate(alert)
 
 
-async def _create_case(alert: NormalizedAlert, to_dlq: bool = True) -> CaseRef | None:
-    backend = get_backend()
-    existing = await db.find_recent_case(alert.fingerprint, hours=24)
+async def _comment(alert: NormalizedAlert, ref: CaseRef, text: str) -> bool:
+    """Mövcud case-ə şərh: case-in öz backend-i ilə. Alınmasa alert emalı dayanmır, audit-ə yazılır."""
     try:
-        if existing:  # idempotentlik: eyni hadisə, eyni case
-            ref = CaseRef(**existing)
-            await backend.comment(ref, f"Təkrar alert {alert.alert_id} ({alert.received_at.isoformat()})")
-            return ref
-        ref = await backend.create(alert, alert.decision)
+        await get_backend(ref.backend).comment(ref, text)
+        return True
+    except (CaseError, OSError, ValueError) as e:
+        log.warning("case %s-ə şərh yazılmadı: %s", ref.case_id, e)
+        await audit(
+            alert.alert_id,
+            "act",
+            "comment_failed",
+            {"case_id": ref.case_id, "backend": ref.backend, "error": str(e)[:300]},
+        )
+        return False
+
+
+async def _create_case(alert: NormalizedAlert, to_dlq: bool = True) -> CaseRef | None:
+    existing = await db.find_recent_case(alert.fingerprint, hours=24)
+    if existing:  # idempotentlik: eyni hadisə, eyni case
+        ref = CaseRef(**existing)
+        await _comment(alert, ref, f"Təkrar alert {alert.alert_id} ({alert.received_at.isoformat()})")
+        return ref
+    try:
+        ref = await get_backend().create(alert, alert.decision)
         await db.save_case(alert, ref)
         return ref
     except CaseError as e:
@@ -146,9 +161,7 @@ async def stage_act(alert: NormalizedAlert, related: CaseRef | None = None) -> C
                 await audit(alert.alert_id, "act", "qa_sampled", {})
             ref = None
         elif related:
-            await get_backend().comment(
-                related, f"Korrelyasiya: alert {alert.alert_id} bu case-ə əlavə olundu"
-            )
+            await _comment(alert, related, f"Korrelyasiya: alert {alert.alert_id} bu case-ə əlavə olundu")
             await db.save_case(alert, related)
             await audit(alert.alert_id, "act", "case_linked", {"case_id": related.case_id})
             ref = related
@@ -164,7 +177,7 @@ async def stage_act(alert: NormalizedAlert, related: CaseRef | None = None) -> C
         if ref:
             await index_case(alert, ref)  # Phase 5: korrelyasiya indeksi
             for cid in alert.context.get("related_cases", []):
-                await get_backend().comment(ref, f"Əlaqəli case: {cid}")
+                await _comment(alert, ref, f"Əlaqəli case: {cid}")
                 await db.save_link(alert.alert_id, ref.case_id, cid)
         await db.save_alert(
             alert, "closed_auto" if d.action == "auto_close" else ("case_created" if ref else "case_pending")
