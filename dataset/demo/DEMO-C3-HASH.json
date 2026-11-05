@@ -1,0 +1,20 @@
+{
+  "source": "edr",
+  "payload": {
+    "detection_id": "DEMO-C3-HASH",
+    "event_time": "2026-11-06T10:05:00+00:00",
+    "detection": {
+      "name": "Suspicious executable from archive",
+      "severity": "high"
+    },
+    "device": {
+      "hostname": "WS-034"
+    },
+    "user": "samir",
+    "file": {
+      "name": "invoice_2026.exe",
+      "path": "C:\\Users\\samir\\Downloads\\invoice_2026\\",
+      "sha256": "3f1c0e5a9d7b2e4c6a8f0b1d3e5c7a9b2d4f6e8a0c1b3d5f7e9a2c4b6d8f0e1a"
+    }
+  }
+}
