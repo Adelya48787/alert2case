@@ -14,6 +14,7 @@ import socket
 from datetime import datetime
 
 from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import ResponseError
 from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from app import queue
@@ -61,6 +62,10 @@ async def reclaim_loop() -> None:
         except (RedisConnectionError, RedisTimeoutError) as e:
             log.warning("reclaim: Redis əlçatmazdır: %s", e)
             continue
+        except ResponseError as e:
+            if "NOGROUP" not in str(e):
+                raise
+            continue  # əsas döngü qrupu yenidən yaradır
         for msg_id, fields in res[1]:
             if fields:
                 await handle(msg_id, fields)
@@ -102,6 +107,13 @@ async def main() -> None:
         except (RedisConnectionError, RedisTimeoutError) as e:
             log.warning("Redis əlçatmazdır (%s), 2 s sonra təkrar", e)  # worker çökmür
             await asyncio.sleep(2)
+            continue
+        except ResponseError as e:
+            if "NOGROUP" not in str(e):
+                raise
+            # Redis təmizlənib (FLUSHDB, AOF-suz restart): qrupu yenidən yarat, worker çökmür
+            log.warning("consumer group yoxdur, yenidən yaradılır: %s", e)
+            await queue.ensure_group()
             continue
         for _stream, messages in resp or []:
             for msg_id, fields in messages:
