@@ -140,3 +140,51 @@ async def timeline(alert_id) -> list[dict]:
         str(alert_id),
     )
     return [dict(r) for r in rows]
+
+
+# ---------- Phase 5: korrelyasiya və rəy ----------
+async def save_link(alert_id, case_id: str, related_case_id: str) -> None:
+    p = await pool()
+    await p.execute(
+        """INSERT INTO case_links (alert_id, case_id, related_case_id) VALUES ($1, $2, $3)
+           ON CONFLICT DO NOTHING""",
+        alert_id,
+        case_id,
+        related_case_id,
+    )
+
+
+async def alert_for_case(case_id: str):
+    p = await pool()
+    return await p.fetchval(
+        "SELECT alert_id FROM cases WHERE case_id = $1 ORDER BY created_at LIMIT 1", case_id
+    )
+
+
+async def last_decision(alert_id) -> dict | None:
+    p = await pool()
+    row = await p.fetchrow(
+        """SELECT verdict, severity_id, rule_id, rule_version FROM decisions
+           WHERE alert_id = $1 ORDER BY decided_at DESC LIMIT 1""",
+        alert_id,
+    )
+    return dict(row) if row else None
+
+
+async def save_feedback(fb, dec: dict) -> None:
+    p = await pool()
+    await p.execute(
+        """INSERT INTO feedback (alert_id, source, analyst, auto_verdict, human_verdict,
+                                 auto_severity, human_severity, rule_id, rule_version, comment)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)""",
+        fb.alert_id,
+        fb.source,
+        fb.analyst,
+        dec["verdict"],
+        fb.human_verdict,
+        dec["severity_id"],
+        fb.human_severity,
+        dec["rule_id"],
+        dec["rule_version"],
+        fb.comment,
+    )

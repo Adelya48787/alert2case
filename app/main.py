@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
 from app import db, pipeline, queue
 from app.config import settings
+from app.feedback.collector import FeedbackIn, from_thehive, record
 from app.stages import build_router
 
 app = FastAPI(title="alert2case")
@@ -80,3 +81,23 @@ async def alert_timeline(alert_id: UUID):
 @app.post("/dlq/cases/replay", dependencies=[Depends(require_admin)])
 async def cases_replay():
     return {"created": await pipeline.retry_pending_cases()}
+
+
+# ---------- Phase 5: analitik rəyi ----------
+@app.post("/feedback", dependencies=[Depends(require_admin)])
+async def feedback_manual(fb: FeedbackIn):
+    return await record(fb)
+
+
+@app.post("/feedback/thehive")
+async def feedback_thehive(
+    body: dict,
+    x_feedback_token: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
+):
+    # TheHive endpoint-i "Bearer" auth ilə göndərir; curl testində X-Feedback-Token da olar
+    token = x_feedback_token or (authorization or "").removeprefix("Bearer ").strip()
+    if not settings.feedback_token or not hmac.compare_digest(settings.feedback_token, token):
+        raise HTTPException(status_code=403, detail="forbidden")
+    fb = await from_thehive(body)
+    return await record(fb) if fb else {"ignored": True}

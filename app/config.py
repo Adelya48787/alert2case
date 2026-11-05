@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     webhook_hmac_secret: str
     admin_token: str = ""
+    feedback_token: str = ""
     vt_api_key: str = ""
     abuseipdb_api_key: str = ""
     otx_api_key: str = ""
