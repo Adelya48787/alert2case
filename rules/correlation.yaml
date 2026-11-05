@@ -1,0 +1,21 @@
+# Case korrelyasiyası qaydaları (Phase 5).
+version: "2026.11.1"
+window_hours: 24
+index_ttl_days: 7
+
+rules:
+  same_ioc:
+    enabled: true
+
+  same_user_multi_type:
+    enabled: true
+    severity_bump: 1
+
+  same_host_chain:
+    enabled: true
+
+  login_bruteforce:
+    enabled: true
+    subnet_prefix: 24
+    threshold: 5
+    window_minutes: 60
