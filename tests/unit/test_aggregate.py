@@ -88,3 +88,44 @@ def test_weights_file_is_valid():
     assert cfg["version"]
     assert set(cfg["providers"]) == {"virustotal", "abuseipdb", "otx"}
     assert cfg["thresholds"]["malicious"] > cfg["thresholds"]["suspicious"]
+
+
+# ---------- 5.4 tam turunda tapılıb: naməlum hash "clean" sayılırdı ----------
+def r_(provider, status="ok", score=None, ioc_type="hash_sha256"):
+    return ProviderResult(provider=provider, ioc_type=ioc_type, ioc="x", status=status, score=score)
+
+
+def test_unseen_hash_with_only_weak_source_is_unknown():
+    # HASH-11/12: VT not_found, OTX ok/0 → əvvəl clean (conf 1.0) idi, auto-close namizədi olurdu
+    e = agg.aggregate([r_("virustotal", "not_found"), r_("otx", score=0)], agg.load_weights())
+    assert (e.verdict, e.status, e.confidence) == ("unknown", "ok", 1.0)
+
+
+def test_only_weak_source_never_gives_clean():
+    e = agg.aggregate([r_("otx", score=0, ioc_type="domain")], agg.load_weights())
+    assert e.verdict == "unknown"
+
+
+def test_strong_source_clean_still_clean():
+    e = agg.aggregate([r_("virustotal", score=0), r_("otx", score=0)], agg.load_weights())
+    assert e.verdict == "clean"
+
+
+def test_unseen_url_with_clean_domain_is_unknown():
+    # URL-12: URL VT-də görülməyib, domain-i VT 0 → əvvəl clean idi
+    rs = [
+        r_("virustotal", "not_found", ioc_type="url"),
+        r_("otx", score=0, ioc_type="url"),
+        r_("virustotal", score=0, ioc_type="domain"),
+        r_("otx", score=0, ioc_type="domain"),
+    ]
+    assert agg.aggregate(rs, agg.load_weights()).verdict == "unknown"
+
+
+def test_all_iocs_seen_by_strong_source_is_clean():
+    rs = [
+        r_("virustotal", score=0, ioc_type="url"),
+        r_("otx", score=0, ioc_type="url"),
+        r_("virustotal", score=0, ioc_type="domain"),
+    ]
+    assert agg.aggregate(rs, agg.load_weights()).verdict == "clean"

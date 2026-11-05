@@ -47,6 +47,10 @@ def aggregate(results: list[ProviderResult], cfg: dict | None = None) -> Enrichm
         score = round(cfg["blend_max"] * top + (1 - cfg["blend_max"]) * avg)
 
     strong_scores = [best[p] for p in best if pcfg.get(p, {}).get("strong")]
+    # hər xarici IOC ən az bir güclü mənbənin real (ok) nəticəsi ilə təsdiqlənməlidir
+    iocs = {(r.ioc_type, r.ioc) for r in results}
+    confirmed = {(r.ioc_type, r.ioc) for r in ok if pcfg.get(r.provider, {}).get("strong")}
+    all_confirmed = bool(iocs) and iocs <= confirmed
     conflict = (
         len(strong_scores) >= 2
         and max(strong_scores) >= cfg["conflict"]["high"]
@@ -65,7 +69,10 @@ def aggregate(results: list[ProviderResult], cfg: dict | None = None) -> Enrichm
         verdict = "malicious"
     elif score >= th["suspicious"] or conflict or weak_signal:
         verdict = "suspicious"
-    elif confidence >= cfg["min_confidence_clean"]:
+    elif confidence >= cfg["min_confidence_clean"] and all_confirmed:
+        # "clean" üçün hər IOC-u güclü mənbə görməlidir: VT "görülməyib" + OTX 0 heç kimin
+        # tanımadığı IOC-dur (unknown), təmizliyin sübutu deyil. URL görülməyibsə, onun domain-inin
+        # təmiz olması URL-i təmiz etmir.
         verdict = "clean"
     else:
         verdict = "unknown"
