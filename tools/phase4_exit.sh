@@ -135,8 +135,11 @@ fi
 # =================================================================== 5. Baza
 section "5 · Baza: miqrasiya 0002 və append-only audit (4.2)"
 if [ $SVC_OK -eq 1 ]; then
-  REV=$(psql_q "select version_num from alembic_version")
-  [ "$REV" = "6eb513fb505f" ] && ok "Miqrasiya 0002 tətbiq olunub (decisions, cases)" migrate || bad "Baza versiyası: ${REV:-yoxdur}" migrate "make migrate"
+  # sonrakı fazaların miqrasiyaları da ola bilər, ona görə versiya yox, cədvəllər və trigger yoxlanır
+  TBL=$(psql_q "select count(*) from information_schema.tables where table_name in ('decisions','cases')")
+  TRG=$(psql_q "select count(*) from pg_trigger where tgname='audit_log_no_change'")
+  if [ "$TBL" = "2" ] && [ "$TRG" = "1" ]; then ok "Miqrasiya 0002 tətbiq olunub (decisions, cases, append-only trigger)" migrate
+  else bad "decisions/cases cədvəlləri və ya audit trigger-i yoxdur" migrate "make migrate"; fi
   AO=$($DC exec -T postgres psql -U soc -d alert2case 2>&1 <<'SQL'
 BEGIN;
 UPDATE audit_log SET event = event WHERE id = (SELECT max(id) FROM audit_log);
