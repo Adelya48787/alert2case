@@ -336,3 +336,68 @@ async def test_cases_replay_endpoint(monkeypatch, admin):
     async with await _client() as c:
         r = await c.post("/dlq/cases/replay", headers=admin)
     assert r.json() == {"created": 2}
+
+
+# ---------- case şərhi: case-in öz backend-i, xəta alert-i dayandırmır ----------
+async def test_comment_failure_on_linked_case_does_not_fail_alert(raw_doc, monkeypatch):
+    # Real hal: korrelyasiya köhnə case-ə bağladı, amma şərh yazıla bilmədi (backend əlçatmaz)
+    from app.case.base import CaseError, CaseRef
+
+    async def correlate(alert):
+        return CaseRef(backend="file", case_id="C-OLD", url="/yoxdur.json")
+
+    async def boom(self, ref, text):
+        raise CaseError("backend əlçatmaz")
+
+    monkeypatch.setattr(pipeline, "correlate", correlate)
+    monkeypatch.setattr(file_backend.FileBackend, "comment", boom)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)  # exception olmamalıdır
+    assert ("act", "comment_failed") in AUDIT and ("act", "case_linked") in AUDIT
+    assert ("notify", "sent") in AUDIT or ("notify", "throttled") in AUDIT
+
+
+async def test_comment_uses_the_backend_of_the_existing_case(raw_doc, monkeypatch):
+    # cari backend thehive, amma bağlanan case fayl case-idir → şərh fayl backend-i ilə yazılır
+    from app.case.base import CaseRef
+    from app.case.thehive import TheHiveBackend
+
+    used = []
+
+    async def correlate(alert):
+        return CaseRef(backend="file", case_id="C-FILE", url="/x.json")
+
+    async def file_comment(self, ref, text):
+        used.append("file")
+
+    async def hive_comment(self, ref, text):
+        used.append("thehive")
+
+    monkeypatch.setattr(settings, "case_backend", "thehive")
+    monkeypatch.setattr(pipeline, "correlate", correlate)
+    monkeypatch.setattr(file_backend.FileBackend, "comment", file_comment)
+    monkeypatch.setattr(TheHiveBackend, "comment", hive_comment)
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert used == ["file"]
+
+
+async def test_duplicate_case_comment_failure_keeps_existing_case(raw_doc, monkeypatch):
+    from app.case.base import CaseError
+
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    first = dict(CASES)
+
+    async def boom(self, ref, text):
+        raise CaseError("down")
+
+    monkeypatch.setattr(file_backend.FileBackend, "comment", boom)
+    AUDIT.clear()
+    await run(raw_doc, "HASH-01", monkeypatch, "malicious", 89)
+    assert CASES == first and ("act", "comment_failed") in AUDIT
+    assert await queue.get_redis().xlen(pipeline.CASES_DLQ) == 0  # case var, DLQ-ya getmir
+
+
+def test_get_backend_by_name(monkeypatch):
+    from app.case.base import get_backend
+
+    monkeypatch.setattr(settings, "case_backend", "file")
+    assert get_backend().name == "file" and get_backend("thehive").name == "thehive"
