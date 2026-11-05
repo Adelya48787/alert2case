@@ -19,9 +19,9 @@ ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 cd "$ROOT" || exit 1
 PY=.venv/bin/python
 DC="docker compose"
-psql_q() { $DC exec -T postgres psql -U soc -d alert2case -tAc "$1" 2>/dev/null | tr -d '[:space:]'; }
-psql_raw() { $DC exec -T postgres psql -U soc -d alert2case -tA -F '|' -c "$1" 2>/dev/null; }
-rcli()   { $DC exec -T redis redis-cli "$@" 2>/dev/null; }
+psql_q() { $DC exec -T postgres psql -U soc -d alert2case -tAc "$1" </dev/null 2>/dev/null | tr -d '[:space:]'; }
+psql_raw() { $DC exec -T postgres psql -U soc -d alert2case -tA -F '|' -c "$1" </dev/null 2>/dev/null; }
+rcli()   { $DC exec -T redis redis-cli "$@" </dev/null 2>/dev/null; }
 envval() { grep -E "^$1=" .env 2>/dev/null | tail -1 | cut -d= -f2-; }   # dəyər yalnız dəyişənə yazılır, çap olunmur
 
 WHO=$(git config user.name 2>/dev/null)
