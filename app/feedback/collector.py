@@ -36,9 +36,27 @@ async def from_thehive(body: dict) -> FeedbackIn | None:
     """TheHive webhook-u. Format versiyadan asılıdır, ona görə ehtiyatla oxuyuruq."""
     obj = body.get("object") or body.get("details") or body
     case_id = obj.get("_id") or body.get("objectId")
-    resolution = obj.get("resolutionStatus")
+    # Nəticə versiyadan asılı olaraq fərqli sahədədir (real TheHive 5.8 webhook v0 ilə yoxlanılıb):
+    #   TheHive 4:          object.resolutionStatus = "FalsePositive"
+    #   TheHive 5.8 (v0):   object.status = "Resolved", object.extendedStatus = "FalsePositive",
+    #                       details.status = "FalsePositive", resolutionStatus = None
+    #   TheHive 5 API v1:   object.status = "FalsePositive", stage = "Closed"
+    # Tanınan ilk dəyər götürülür; açıq statuslar (New, InProgress, Resolved) RESOLUTION-da yoxdur.
+    details = body.get("details") if isinstance(body.get("details"), dict) else {}
+    candidates = (
+        obj.get("resolutionStatus"),
+        obj.get("extendedStatus"),
+        obj.get("status"),
+        details.get("status"),
+    )
+    resolution = next((c for c in candidates if c in RESOLUTION), None)
     if not case_id or resolution not in RESOLUTION:
-        log.info("rəy deyil və ya case bağlanmayıb: %s", body.get("operation") or body.get("action"))
+        log.info(
+            "rəy deyil və ya case bağlanmayıb: op=%s status=%s stage=%s",
+            body.get("operation") or body.get("action"),
+            obj.get("status"),
+            obj.get("stage"),
+        )
         return None
     alert_id = await db.alert_for_case(case_id)
     if alert_id is None:

@@ -85,8 +85,9 @@ def description(alert: NormalizedAlert, d: Decision) -> str:
     return "\n".join(lines)
 
 
-def get_backend() -> CaseBackend:
-    if settings.case_backend == "thehive":
+def get_backend(name: str | None = None) -> CaseBackend:
+    """name verilməsə .env-dəki CASE_BACKEND; verilsə həmin backend (mövcud case-ə şərh üçün)."""
+    if (name or settings.case_backend) == "thehive":
         from app.case.thehive import TheHiveBackend
 
         return TheHiveBackend()
