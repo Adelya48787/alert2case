@@ -21,7 +21,7 @@ from pathlib import Path
 
 SEED = 42
 PER_TYPE = {"HASH": 7, "URL": 7, "LOGIN": 6}
-ANALYSTS = ["elcin", "teymur", "elvin"]
+ANALYSTS = ["adile", "teymur"]  # 06.11: komanda qərarı ilə iki analitik, hər biri 20 alert
 MAX_PER_SESSION = 10
 VERDICTS_REQUIRED = {"malicious", "clean", "uncertain"}
 

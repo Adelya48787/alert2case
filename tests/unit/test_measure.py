@@ -60,7 +60,7 @@ def test_order_differs_between_analysts():
     ids, labels = dataset()
     rows = measure.assign(measure.pick_sample(ids, labels))
     orders = {a: [r["alert_id"] for r in rows if r["analyst"] == a] for a in measure.ANALYSTS}
-    assert len({tuple(o) for o in orders.values()}) == 3
+    assert len({tuple(o) for o in orders.values()}) == len(measure.ANALYSTS)
 
 
 def test_cards_show_source_fields_but_no_answers():
