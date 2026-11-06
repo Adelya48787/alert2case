@@ -19,9 +19,9 @@ ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 cd "$ROOT" || exit 1
 PY=.venv/bin/python
 DC="docker compose"
-psql_q() { $DC exec -T postgres psql -U soc -d alert2case -tAc "$1" 2>/dev/null | tr -d '[:space:]'; }
-psql_raw() { $DC exec -T postgres psql -U soc -d alert2case -tA -F '|' -c "$1" 2>/dev/null; }
-rcli()   { $DC exec -T redis redis-cli "$@" 2>/dev/null; }
+psql_q() { $DC exec -T postgres psql -U soc -d alert2case -tAc "$1" </dev/null 2>/dev/null | tr -d '[:space:]'; }
+psql_raw() { $DC exec -T postgres psql -U soc -d alert2case -tA -F '|' -c "$1" </dev/null 2>/dev/null; }
+rcli()   { $DC exec -T redis redis-cli "$@" </dev/null 2>/dev/null; }
 envval() { grep -E "^$1=" .env 2>/dev/null | tail -1 | cut -d= -f2-; }   # dəyər yalnız dəyişənə yazılır, çap olunmur
 
 WHO=$(git config user.name 2>/dev/null)
@@ -40,6 +40,10 @@ else bad "main GitHub-dan $BEHIND commit geridədir" main "git pull"; fi
 if $PY -c 'import prometheus_client, aiosmtplib, respx' >/dev/null 2>&1; then
   ok "Phase 4 paketləri .venv-dədir (prometheus-client, aiosmtplib, respx)" pkgs
 else bad "Phase 4 paketləri çatışmır" pkgs "uv pip install -r requirements.txt -r requirements-dev.txt"; fi
+
+CHG=$(git status --porcelain --untracked-files=no 2>/dev/null)
+if [ -z "$CHG" ]; then ok "İzlənən fayllarda lokal dəyişiklik yoxdur" localchg
+else warn "Lokal dəyişiklik var: $(echo "$CHG" | awk '{print $2}' | head -3 | tr '\n' ' ')" localchg "git diff ilə baxın; dataset/ və ya rules/ dəyişibsə nəticə fərqli olar"; fi
 
 # =================================================================== 2. .env
 section "2 · .env: Phase 4 dəyişənləri"
@@ -155,7 +159,8 @@ section "6 · Tam axın: simulyatordan case-ə (4.3, 4.4, 4.6a)"
 MAL=""; MAL_ANY=""; CLEAN=""
 if [ $SVC_OK -eq 1 ]; then
   # dedup pəncərəsində (15 dəq) olmayan bir zərərli (üstünlük HASH) və bir təmiz alert seçilir
-  CANDS=$($PY - <<'PYEOF' 2>/dev/null
+  CANDS_ERR=$(mktemp)
+  CANDS=$($PY - <<'PYEOF' 2>"$CANDS_ERR"
 import csv
 import json
 import pathlib
@@ -182,8 +187,12 @@ PYEOF
   MAL=${MAL:-$MAL_ANY}   # HASH üstündür, yoxdursa istənilən zərərli alert
 fi
 if [ $SVC_OK -ne 1 ]; then warn "Servislər işləmədiyi üçün yoxlanmadı" e2e
+elif [ -z "$CANDS" ]; then
+  ERR=$(grep -v '^\s*$' "$CANDS_ERR" 2>/dev/null | tail -1 | cut -c1-160)
+  bad "Test üçün namizəd alert siyahısı boşdur" e2e "Səbəb: ${ERR:-Python xəta vermədi; dataset/expected.csv-də malicious/clean etiketli alert tapılmadı}"
 elif [ -z "$MAL" ] || [ -z "$CLEAN" ]; then
-  warn "Son 15 dəqiqədə göndərilməmiş uyğun alert tapılmadı" e2e "15 dəqiqə gözləyib skripti təkrar işlədin"
+  NC=$(echo "$CANDS" | grep -c .)
+  warn "$NC namizəd alert-in hamısı son 15 dəqiqədə göndərilib (zərərli: ${MAL:-yox}, təmiz: ${CLEAN:-yox})" e2e "15 dəqiqə gözləyib skripti təkrar işlədin; make simulate-dən dərhal sonra işlətməyin"
 else
   T0=$(psql_q "select extract(epoch from now())")   # baza saatı ilə, saniyə
   MAILS0=$(curl -s "http://localhost:8025/api/v1/messages?limit=1" | $PY -c 'import sys,json;print(json.load(sys.stdin).get("total",0))' 2>/dev/null)
@@ -344,4 +353,5 @@ printf '\n\033[1mNƏTİCƏ:\033[0m %d OK · %d FAIL · %d WARN\n' "$PASS" "$FAIL
 if [ $FAILN -eq 0 ]; then printf '\033[32mPhase 4 bu kompüterdə tam işləyir: alert-dən case-ə və bildirişə qədər.\033[0m\n'
 else printf '\033[31mFAIL olan sətirlərin altındakı → göstərişə əməl edin.\033[0m\n'; fi
 printf '\nQrupa göndərmək üçün:\nP4EXIT %s |%s\n' "${WHO:-?}" "$SUMMARY"
+[ -n "${CANDS_ERR:-}" ] && rm -f "$CANDS_ERR"
 [ $FAILN -eq 0 ]

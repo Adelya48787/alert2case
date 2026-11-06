@@ -114,6 +114,7 @@ class ProxyParser(BaseParser):
             received_at=received_at,
             severity_id=Severity.LOW,
             user=user,
+            host=p.get("host", {}).get("name"),  # ECS host.name: sorğunu göndərən kompüter (C3 üçün)
             observables=obs,
             raw=p,
         )

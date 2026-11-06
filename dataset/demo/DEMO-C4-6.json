@@ -1,0 +1,20 @@
+{
+  "source": "wazuh",
+  "payload": {
+    "id": "DEMO-C4-6",
+    "timestamp": "2026-11-06T11:18:00+00:00",
+    "rule": {
+      "id": "5710",
+      "level": 10,
+      "description": "sshd: attempt to login using a non-existent user or wrong password"
+    },
+    "agent": {
+      "name": "vpn-gw"
+    },
+    "data": {
+      "srcip": "185.220.101.26",
+      "dstuser": "svc-backup"
+    },
+    "full_log": "Failed password for svc-backup from 185.220.101.26 port 50106 ssh2"
+  }
+}

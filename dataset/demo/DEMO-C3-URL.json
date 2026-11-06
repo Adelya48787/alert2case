@@ -1,0 +1,28 @@
+{
+  "source": "proxy",
+  "payload": {
+    "@timestamp": "2026-11-06T10:02:00+00:00",
+    "event": {
+      "id": "DEMO-C3-URL",
+      "category": "web",
+      "action": "allowed"
+    },
+    "url": {
+      "full": "hxxp://invoice-share[.]example/files/invoice_2026.zip"
+    },
+    "source": {
+      "ip": "10.0.5.34"
+    },
+    "host": {
+      "name": "WS-034"
+    },
+    "user": {
+      "name": "samir"
+    },
+    "http": {
+      "response": {
+        "status_code": 200
+      }
+    }
+  }
+}

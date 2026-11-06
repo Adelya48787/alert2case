@@ -25,5 +25,6 @@ up-obs:     ## + Prometheus və Grafana
 reset-data: ## DİQQƏT: alert, case, audit məlumatını silir (cədvəllər qalır)
 	docker compose exec -T postgres psql -U soc -d alert2case -c "TRUNCATE alerts, audit_log CASCADE"
 	docker compose exec -T redis redis-cli FLUSHDB
-	rm -rf var/cases
+	# case faylları container-də root ilə yaradılır: host istifadəçisi silə bilmir, container silir
+	docker compose exec -T worker sh -c 'rm -rf /code/var/cases'
 	docker compose restart worker
