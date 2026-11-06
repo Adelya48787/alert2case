@@ -1,17 +1,28 @@
 # 6.3 · Dəqiqlik: xülasə
 
-Yeniləndi: 2026-11-06 23:19
+Yeniləndi: 2026-11-07 00:22
 
 ## Sistem: ssenarilər üzrə
 
 | Ssenari | Alert | FN | FP | Dəqiqlik | Kappa | Auto-close payı |
 |---|---:|---:|---:|---:|---:|---:|
-| cold | 36 | **1** | 6 | 77.8% | 0.66 | 16.7% |
-| warm | — | — | — | — | — | — |
-| burst | 36 | **1** | 8 | 72.2% | 0.57 | 11.1% |
-| chaos | 36 | **0** | 11 | 36.1% | 0.04 | 0.0% |
+| cold | 36 | **0** | 8 | 72.2% | 0.57 | 8.3% |
+| warm | 36 | **0** | 5 | 72.2% | 0.57 | 16.7% |
+| burst | 36 | **0** | 9 | 69.4% | 0.52 | 5.6% |
+| chaos | 36 | **0** | 11 | 36.1% | 0.05 | 0.0% |
 
 Chaos-da intel mənbələri WireMock-dur (hamısına "zərərli" cavab verir): orada verdict dəqiqliyi məna daşımır, yalnız FN (heç nə səhvən bağlanmırmı) vacibdir.
+
+## Manual (6.1): analitiklər həqiqətə qarşı
+
+| Analitik | Alert | Dəqiqlik | Kappa | Zərərli/şübhəli → clean |
+|---|---:|---:|---:|---:|
+| adile | 20 | 65.0% | 0.46 | 3 |
+| teymur | 20 | 65.0% | 0.46 | 3 |
+
+Analitiklər arası razılaşma (20 alert): 80.0%, kappa 0.69
+
+Sistem (cold) eyni 20 alert-də: dəqiqlik 80.0%, kappa 0.69, FN 0
 
 ## Auto-close qərarı üçün şərtlər (runbook 6.3)
 

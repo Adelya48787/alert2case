@@ -1,19 +1,19 @@
 # Dəqiqlik · chaos
 
-Tarix: 2026-11-06 23:18 · Müqayisə olunan alert: 36
+Tarix: 2026-11-07 00:22 · Müqayisə olunan alert: 36
 
 ## Verdict (sətir: expected.csv, sütun: sistem; suspicious və unknown = uncertain)
 
 |  | sistem: malicious | sistem: uncertain | sistem: clean |
 |---|---:|---:|---:|
-| həqiqət: malicious | 8 | 3 | 0 |
-| həqiqət: uncertain | 9 | 5 | 0 |
-| həqiqət: clean | 8 | 3 | 0 |
+| həqiqət: malicious | 10 | 1 | 0 |
+| həqiqət: uncertain | 11 | 3 | 0 |
+| həqiqət: clean | 5 | 6 | 0 |
 
-Sistemin xam cavabları: malicious 25, suspicious 10, unknown 1
+Sistemin xam cavabları: malicious 26, suspicious 9, unknown 1
 
 - Verdict dəqiqliyi: 36.1%
-- Cohen's kappa (sistem vs həqiqət): 0.04
+- Cohen's kappa (sistem vs həqiqət): 0.05
 
 ## Auto-close təhlükəsizliyi (shadow qərarları daxil)
 
@@ -25,15 +25,13 @@ Sistemin xam cavabları: malicious 25, suspicious 10, unknown 1
 
 | Alert | Həqiqət | Sistem | Qayda | Bağlayardı |
 |---|---:|---:|---:|---:|
-| HASH-02 | malicious | suspicious | R06-SUSPICIOUS | xeyr |
-| HASH-03 | malicious | suspicious | R06-SUSPICIOUS | xeyr |
 | HASH-04 | malicious | suspicious | R06-SUSPICIOUS | xeyr |
-| HASH-05 | clean | malicious | R03-HASH-MALICIOUS | xeyr |
+| HASH-05 | clean | suspicious | R06-SUSPICIOUS | xeyr |
 | HASH-06 | clean | malicious | R03-HASH-MALICIOUS | xeyr |
-| HASH-07 | clean | malicious | R03-HASH-MALICIOUS | xeyr |
+| HASH-07 | clean | suspicious | R06-SUSPICIOUS | xeyr |
 | HASH-08 | clean | suspicious | R06-SUSPICIOUS | xeyr |
+| HASH-09 | uncertain | malicious | R03-HASH-MALICIOUS | xeyr |
 | HASH-10 | uncertain | malicious | R03-HASH-MALICIOUS | xeyr |
-| HASH-12 | uncertain | malicious | R03-HASH-MALICIOUS | xeyr |
 | LOGIN-05 | clean | malicious | R04-MALICIOUS | xeyr |
 | LOGIN-06 | clean | malicious | R04-MALICIOUS | xeyr |
 | LOGIN-07 | clean | malicious | R04-MALICIOUS | xeyr |
@@ -43,8 +41,10 @@ Sistemin xam cavabları: malicious 25, suspicious 10, unknown 1
 | LOGIN-11 | uncertain | malicious | R04-MALICIOUS | xeyr |
 | LOGIN-12 | uncertain | malicious | R04-MALICIOUS | xeyr |
 | URL-01 | uncertain | malicious | R04-MALICIOUS | xeyr |
+| URL-05 | uncertain | malicious | R04-MALICIOUS | xeyr |
 | URL-06 | clean | malicious | R04-MALICIOUS | xeyr |
 | URL-07 | clean | suspicious | R06-SUSPICIOUS | xeyr |
-| URL-08 | clean | malicious | R04-MALICIOUS | xeyr |
-| URL-09 | uncertain | malicious | R04-MALICIOUS | xeyr |
+| URL-08 | clean | suspicious | R06-SUSPICIOUS | xeyr |
+| URL-10 | uncertain | malicious | R04-MALICIOUS | xeyr |
 | URL-11 | uncertain | malicious | R04-MALICIOUS | xeyr |
+| URL-12 | uncertain | malicious | R04-MALICIOUS | xeyr |
