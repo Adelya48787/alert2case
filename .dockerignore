@@ -1,5 +1,24 @@
-.venv/
-.git/
-__pycache__/
-*.pyc
+# Image-ə düşməməli olanlar. Dockerfile yalnız lazım olan qovluqları COPY edir; bu fayl ikinci qoruma qatıdır.
+# Sirlər
 .env
+.env.*
+!.env.example
+n8n/credentials.local.json
+# Git və lokal mühit
+.git
+.venv
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+.timer_state.json
+.baseline_order_*
+# Production-a lazım olmayanlar
+var/
+docs/
+tests/
+dataset/
+tools/
+grafana/
+prometheus/
+wiremock/

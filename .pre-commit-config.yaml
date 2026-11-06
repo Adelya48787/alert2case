@@ -14,5 +14,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-yaml
+        # docker-compose.prod.yml Compose-un !override teqini işlədir; onu docker compose config yoxlayır (tools/prod_check.sh)
+        exclude: ^docker-compose\.prod\.yml$
       - id: check-added-large-files
       - id: detect-private-key
