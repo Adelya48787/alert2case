@@ -53,7 +53,7 @@ def main() -> None:
         OUT.parent.mkdir(parents=True, exist_ok=True)
         new_file = not OUT.exists()
         with OUT.open("a", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=FIELDS)
+            w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
             if new_file:
                 w.writeheader()
             w.writerow(

@@ -121,7 +121,7 @@ def plan() -> None:
     (OUT / "alerts").mkdir(parents=True, exist_ok=True)
     (OUT / "sample.txt").write_text("\n".join(sample) + "\n", encoding="utf-8")
     with (OUT / "assignment.csv").open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["analyst", "session", "pos", "alert_id"])
+        w = csv.DictWriter(f, fieldnames=["analyst", "session", "pos", "alert_id"], lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     for old in (OUT / "alerts").glob("*.md"):
@@ -203,7 +203,7 @@ def merge() -> list[dict]:
     if rows:
         rows.sort(key=lambda r: r["t_start"])
         with (OUT / "manual_raw.csv").open("w", newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=fields)
+            w = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
             w.writeheader()
             w.writerows(rows)
     return rows
