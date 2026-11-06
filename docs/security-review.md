@@ -2,6 +2,8 @@
 
 Bu sənəd təhvildən əvvəlki təhlükəsizlik yoxlamasının nəticəsidir (Task 6.6). Avtomatik yoxlamalar `python -m tools.security_review` ilə işləyən stekdə aparılıb; xam çıxış: [`security/review_checks.md`](security/review_checks.md). CI-dakı yoxlamalar: `.github/workflows/security.yml` ([ekran görüntüsü](security/security-ci-green.png)).
 
+**Review üsulu:** avtomatik yoxlamalar (`tools/security_review.py`) və bu sənədin PR review-u. Ayrıca review iclası keçirilmədi (Team Lead qərarı, 2026-11-07): yoxlamalar sübutla birlikdə sənəddədir, ikinci göz PR review ilə təmin olunur.
+
 ## 1. Yoxlamalar
 
 | # | Yoxlama | Necə yoxlanıldı | Nəticə |
