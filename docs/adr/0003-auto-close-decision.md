@@ -1,6 +1,6 @@
 # ADR-0003: Auto-close qərarı və dynamic DNS qoruyucusu
 
-* **Status:** Proposed (komanda səsverməsi gözlənilir: bu qərarın təsdiqi)
+* **Status:** Accepted (2026-11-07, Team Lead qərarı)
 * **Tarix:** 2026-11-06
 * **Müəllif:** Komanda
 * **Task:** Phase 6 · Task 6.3 (Dəqiqlik)
@@ -78,6 +78,7 @@ Səbəbdən asılı olmayaraq risk realdır. Dynamic DNS alt domenini hər kəs 
 
 1. `app/rules/guards.py`-yə **dynamic DNS blocker** əlavə olunur. Alert-in URL və ya domain observable-ının host-u `DYNAMIC_DNS` siyahısındakı provayderin özü və ya alt domenidirsə, auto-close bloklanır və case açılır (`reasons`: "dynamic DNS domeni: …"). Siyahı kodda saxlanılır (31 provayder: duckdns.org, ddns.net, hopto.org, no-ip.* və s.), dəyişiklik PR və review tələb edir. İnsanın təsdiqlədiyi allowlist digər qoruyucularda olduğu kimi bu blokeri də keçə bilər.
 2. `SHADOW_MODE=true` qalır. Sistem "bağlayardı" qərarlarını qeyd edir, amma alert insana gedir.
+3. Konfiqurasiya: `AUTO_CLOSE_ENABLED=false`, `SHADOW_MODE=true`. Bunlar `app/config.py`-də və `.env.example`-da default dəyərlərdir; heç bir mühitdə dəyişdirilmir. Qərarı Team Lead verib.
 
 ### Niyə indi açılmır
 
@@ -90,7 +91,7 @@ Sürət qazancı auto-close olmadan da qalır. Sistem hər alert-i zənginləşd
 
 ## 5. Auto-close-u açmaq üçün şərtlər
 
-Auto-close yalnız aşağıdakıların **hamısı** ödənəndə və komanda yenidən səs verəndə açılır. O zaman bu ADR yeni ADR ilə əvəz olunur.
+Auto-close yalnız aşağıdakıların **hamısı** ödənəndə və Team Lead yeni qərar verəndə açılır. O zaman bu ADR yeni ADR ilə əvəz olunur.
 
 | Şərt | Hədd | Vəziyyət |
 |---|---|---|
@@ -99,7 +100,7 @@ Auto-close yalnız aşağıdakıların **hamısı** ödənəndə və komanda yen
 | Görülməmiş alert-lərdə (ən azı 30, dataset-dən kənar) FN | 0 | Gözlənilir |
 | Shadow mode dövründə "sistem bağlayardı, analitik malicious/suspicious dedi" | 0 | Gözlənilir |
 | QA nümunəsində (bağlananların 10%-i) səhv bağlama | 0 | Gözlənilir |
-| Komanda səsverməsi | 4/4 | Gözlənilir |
+| Team Lead qərarı (yeni ADR) | təsdiq | Gözlənilir |
 
 Mərhələli açılma mümkündür: ilk mərhələdə yalnız `malicious_hash` tipi. Fayl hash-ı domen kimi dəqiqələr içində yaradılıb "təmiz" görünə bilmir və ölçmələrdə HASH-da FN olmayıb. Bu da eyni şərtlərə tabedir.
 
