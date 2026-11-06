@@ -18,6 +18,9 @@ simulate:   ## 36 alert-i API-yə göndər
 	python tools/simulator.py --rate 2
 migrate:    ## bazaya miqrasiyaları tətbiq et
 	docker compose run --rm api alembic upgrade head
+.PHONY: e2e
+e2e:        ## işləyən stekə qarşı uçdan-uca testlər (əvvəlcə: make reset-data)
+	E2E=1 .venv/bin/python -m pytest -q -p no:cacheprovider tests/e2e
 restart-worker:
 	docker compose restart worker
 up-obs:     ## + Prometheus və Grafana
