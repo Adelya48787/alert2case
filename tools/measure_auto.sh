@@ -4,9 +4,9 @@
 #   tools/measure_auto.sh warm     # cache dolu (cold-dan dərhal sonra)  (~7 dəq)
 #   tools/measure_auto.sh burst    # boş cache, saniyədə 2 alert         (~12-15 dəq, VT limiti)
 #   tools/measure_auto.sh chaos    # test steki: intel 3 s (±1 s) gecikmə ilə (~3 dəq)
-#   tools/measure_auto.sh summary  # docs/measure/summary.md
+#   tools/measure_auto.sh summary  # docs/measure/summary.md və accuracy.md
 # Dev rejimində işlədin (make down-prod). Lokal test məlumatını silir (make reset-data), repo fayllarına
-# yalnız docs/measure/auto_*.csv, mttr_*.md və summary.md yazır. Açarlar ekrana çıxmır.
+# yalnız docs/measure/auto_*.csv, mttr_*.md, decisions_*.csv, accuracy_*.md və xülasələri yazır. Açarlar ekrana çıxmır.
 set -u
 SC=${1:-}
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Repo qovluğunda deyilsiniz: cd ~/projects/alert2case"; exit 1; }
@@ -17,7 +17,7 @@ step() { printf '\n\033[1m▸ %s\033[0m\n' "$1"; }
 
 case "$SC" in
   cold|warm|burst|chaos) ;;
-  summary) exec $PY -m tools.compute_mttr summary ;;
+  summary) $PY -m tools.compute_mttr summary && exec $PY -m tools.accuracy summary ;;
   *) echo "İstifadə: tools/measure_auto.sh cold|warm|burst|chaos|summary"; exit 1 ;;
 esac
 
@@ -65,6 +65,13 @@ $PY tools/simulator.py --rate "$RATE" --no-shuffle | tail -1
 step "Emalın bitməsi gözlənilir və MTTR hesablanır"
 $PY -m tools.compute_mttr --label "$SC"
 RC=$?
-[ $RC -eq 0 ] && printf '\n\033[32m%s ssenarisi bitdi.\033[0m Nəticə: docs/measure/mttr_%s.md\n' "$SC" "$SC" \
-  || printf '\n\033[31m%s: hərəkətə çatmayan alert var (çıxış kodu %s)\033[0m\n' "$SC" "$RC"
+
+step "Dəqiqlik (6.3): qərarlar expected.csv ilə müqayisə olunur"
+$PY -m tools.accuracy --label "$SC"
+ARC=$?
+[ $ARC -eq 3 ] && printf '\n\033[31mFN var: auto-close açılmamalıdır (docs/measure/accuracy_%s.md)\033[0m\n' "$SC"
+[ $RC -eq 0 ] && [ $ARC -ne 0 ] && RC=$ARC
+if [ $RC -eq 0 ]; then printf '\n\033[32m%s ssenarisi bitdi.\033[0m Nəticə: docs/measure/mttr_%s.md, accuracy_%s.md\n' "$SC" "$SC" "$SC"
+elif [ $RC -eq 3 ]; then printf '\n\033[31m%s: FN var (bax accuracy_%s.md)\033[0m\n' "$SC" "$SC"
+else printf '\n\033[31m%s: hərəkətə çatmayan alert var (çıxış kodu %s)\033[0m\n' "$SC" "$RC"; fi
 exit $RC

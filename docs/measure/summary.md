@@ -1,13 +1,13 @@
 # 6.2 · Avtomatik ölçmə: xülasə
 
-Yeniləndi: 2026-11-06 21:23
+Yeniləndi: 2026-11-06 23:19
 
 | Ssenari | Alert | Çatmayan | Median (s) | P90 (s) | Manual median (s) | Eyni 20 alert median (s) | Azalma |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| cold | 36 | 0 | 46.70 | 68.31 | — | — | — |
+| cold | 36 | 0 | 46.65 | 64.91 | — | — | — |
 | warm | 36 | 0 | 0.69 | 40.40 | — | — | — |
-| burst | 36 | 0 | 141.36 | 259.44 | — | — | — |
-| chaos | 36 | 0 | 123.68 | 235.91 | — | — | — |
+| burst | 36 | 0 | 149.71 | 259.81 | — | — | — |
+| chaos | 36 | 0 | 121.04 | 234.92 | — | — | — |
 
 - **cold:** boş cache, 10 saniyədə bir alert (real SOC tempi).
 - **warm:** eyni alert-lər, intel cache dolu.
