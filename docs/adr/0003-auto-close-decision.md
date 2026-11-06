@@ -85,7 +85,7 @@ Səbəbdən asılı olmayaraq risk realdır. Dynamic DNS alt domenini hər kəs 
 * **Düzəliş eyni məlumatda yoxlanılıb.** Qoruyucu URL-11/12 FN-i görüldükdən sonra yazıldı. Eyni 36 alert-də "FN 0" onun işlədiyini göstərir, amma ümumiləşdiyini sübut etmir. Bunu yalnız görülməmiş alert-lər sübut edər.
 * **Nəticə qaçışdan qaçışa dəyişir.** Eyni alert VT limiti və intel dəyişkənliyi səbəbindən bir qaçışda bağlanır, digərində yox. Dynamic DNS sinfi bağlandı, amma yeni qeydiyyatdan keçmiş adi domenlər üçün eyni mexanizm qalır.
 * **Fayda kiçik, risk asimmetrikdir (ADR-0002).** Auto-close payı 36 alert-də 8–28% təşkil edir. Bir FN real hücumun gözdən qaçması deməkdir.
-* **ADR-0002 şərtlərinin bir hissəsi hələ yoxlanmayıb:** kill switch testi, QA nümunəsi və rəy dövrəsi.
+* **ADR-0002 şərtlərinin bir hissəsi hələ yoxlanmayıb:** QA nümunəsi və rəy dövrəsi (kill switch sonradan test olundu: 6.4 s).
 
 Sürət qazancı auto-close olmadan da qalır. Sistem hər alert-i zənginləşdirib qərar təklifi ilə ~50 s-də hazırlayır (manual median 249 s). Analitik təmiz alert-i yalnız təsdiqləyir.
 
@@ -96,7 +96,7 @@ Auto-close yalnız aşağıdakıların **hamısı** ödənəndə və Team Lead y
 | Şərt | Hədd | Vəziyyət |
 |---|---|---|
 | FN (shadow daxil), 4 ssenaridə, qoruyucu ilə | 0 | ✓ Ödənib (2026-11-07: cold, warm, burst, chaos hamısında 0) |
-| Kill switch: `AUTO_CLOSE_ENABLED=false` 1 dəqiqədə dayandırır | test olunub | Gözlənilir |
+| Kill switch: `AUTO_CLOSE_ENABLED=false` 1 dəqiqədə dayandırır | test olunub | ✓ Ödənib (2026-11-07: keçid 6.4 s; ON-da 1 closed_auto, OFF-da 0; 4 qərar "kill switch bağlıdır" ilə insana; `docs/measure/killswitch.md`) |
 | Görülməmiş alert-lərdə (ən azı 30, dataset-dən kənar) FN | 0 | Gözlənilir |
 | Shadow mode dövründə "sistem bağlayardı, analitik malicious/suspicious dedi" | 0 | Gözlənilir |
 | QA nümunəsində (bağlananların 10%-i) səhv bağlama | 0 | Gözlənilir |
