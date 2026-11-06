@@ -3,18 +3,21 @@
 python tools/timer.py start HASH-03 S3 --analyst adile
 python tools/timer.py stop --analyst adile [--verdict malicious --priority P2]
 python tools/timer.py status --analyst adile
+
+6.1 manual ölçmə üçün: TIMER_OUT=docs/measure/manual_raw.csv (baseline faylı dəyişməz qalır)
 """
 
 import argparse
 import csv
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 STATE = Path(".timer_state.json")
-OUT = Path("docs/baseline/baseline_raw.csv")
+OUT = Path(os.environ.get("TIMER_OUT", "docs/baseline/baseline_raw.csv"))
 FIELDS = ["alert_id", "analyst", "step", "t_start", "t_end", "duration_s", "verdict", "priority", "note"]
 
 
