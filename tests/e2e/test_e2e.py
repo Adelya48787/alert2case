@@ -190,9 +190,9 @@ async def test_panel_lists_and_records_feedback(pg, run):
     url_id = next(x["alert_id"] for x in rows if x["source_ref"] == "URL-01")
     d = httpx.get(f"{API}/api/panel/alerts/{url_id}", headers=h, timeout=10).json()
     urls = [o["value"] for o in d["observables"] if o["type"] in ("url", "domain")]
-    assert urls and all(not v.startswith(("http://", "https://")) and "[.]" in v for v in urls), (
-        "IOC defang olunmayıb"
-    )
+    assert urls and all(
+        not v.startswith(("http://", "https://")) and "[.]" in v for v in urls
+    ), "IOC defang olunmayıb"
     fb = {"alert_id": str(url_id), "human_verdict": "suspicious", "analyst": "e2e", "source": "manual"}
     assert httpx.post(f"{API}/feedback", json=fb, headers=h, timeout=10).json().get("saved") is True
     n = await pg.fetchval(
