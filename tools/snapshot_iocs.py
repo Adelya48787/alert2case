@@ -72,7 +72,7 @@ def http_get(url: str, headers: dict[str, str]) -> tuple[int, object]:
         url, headers={**headers, "Accept": "application/json", "User-Agent": "alert2case-snapshot"}
     )
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:  # nosec B310: sxem yuxarıda yoxlanılır
+        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:  # nosec B310
             status, body = r.status, r.read()
     except urllib.error.HTTPError as e:
         status, body = e.code, e.read()
