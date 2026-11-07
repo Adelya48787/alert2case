@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="az">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,110 +9,130 @@
 <script src="app.js" defer></script>
 </head>
 <body>
-<header class="top">
-  <b class="brand">alert<span class="two">2</span>case <span class="sub">analyst panel</span></b>
-  <nav class="views" id="views" aria-label="Bölmələr">
-    <button type="button" data-page="alerts" aria-current="page">Alerts</button>
-    <button type="button" data-page="health">System</button>
-    <button type="button" data-page="rules">Rules</button>
-  </nav>
-  <span class="mode" id="mode" lang="en" hidden></span>
-  <div class="live" id="liveBox">
-    <label class="switch"><input type="checkbox" id="auto" checked> <span>Live</span></label>
-    <span class="muted small" id="updated"></span>
-  </div>
-  <span class="who" id="who"></span>
-  <button type="button" id="refresh" class="btn">Refresh</button>
-  <button type="button" id="help" class="btn ghost" title="Klaviatura qısayolları (?)">?</button>
-  <button type="button" id="logout" class="btn ghost">Logout</button>
-</header>
 
 <section id="login" class="login" hidden>
   <form id="loginForm" class="card">
-    <b class="brand big">alert<span class="two">2</span>case</b>
-    <h1>Analyst panel</h1>
-    <p class="muted">Admin token yalnız bu brauzer sekməsində saxlanılır və sekmə bağlananda silinir.</p>
-    <label for="token">Admin token</label>
+    <div class="logo">alert<span>2</span>case</div>
+    <h1 lang="en">Analyst panel</h1>
+    <p class="mu">Admin token yalnız bu brauzer sekməsində saxlanılır və sekmə bağlananda silinir.</p>
+    <label for="token" lang="en">Admin token</label>
     <input id="token" type="password" autocomplete="off" required>
-    <label for="analyst">Analyst</label>
+    <label for="analyst" lang="en">Analyst</label>
     <input id="analyst" type="text" maxlength="40" placeholder="məs. analyst-1" required>
     <button type="submit" class="btn primary">Login</button>
     <p class="err" id="loginErr" role="alert"></p>
   </form>
 </section>
 
-<main id="app" class="app" hidden>
- <div id="page-alerts">
-  <section class="dash" aria-label="Ümumi vəziyyət">
-    <div class="kpis" id="kpis"></div>
-    <div class="charts">
-      <figure class="chart wide"><figcaption lang="en">Alerts per hour · last 24h</figcaption><div id="chHourly"></div></figure>
-      <figure class="chart"><figcaption lang="en">Open cases by priority</figcaption><div id="chPriority"></div></figure>
-      <figure class="chart"><figcaption lang="en">Verdicts</figcaption><div id="chVerdict"></div></figure>
+<div id="app" class="app" hidden>
+  <aside class="side">
+    <div class="logo">alert<span>2</span>case</div>
+    <nav class="nav" id="nav" aria-label="Bölmələr" lang="en">
+      <button type="button" data-page="queue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Queue<span class="c" id="cQueue"></span></button>
+      <button type="button" data-page="incidents"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4zM4 12l8 4 8-4M4 17l8 4 8-4"/></svg>Incidents<span class="c" id="cInc"></span></button>
+      <button type="button" data-page="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Overview</button>
+      <button type="button" data-page="health"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>System</button>
+      <button type="button" data-page="rules"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg>Rules</button>
+    </nav>
+    <div class="sb" lang="en">
+      <div id="sbMode"><i class="dot"></i>Auto-close: —</div>
+      <div id="sbIntel"><i class="dot"></i>Intel: —</div>
+      <label class="switch"><input type="checkbox" id="auto" checked> Live · <span id="updated">—</span></label>
+      <div class="sbrow"><span class="mu" id="who"></span></div>
+      <div class="sbrow"><button type="button" class="btn sm ghost" id="help" title="Klaviatura qısayolları">? Keys</button><button type="button" class="btn sm ghost" id="logout">Logout</button></div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="hdr">
+      <h1 id="title" lang="en">Triage queue</h1>
+      <span class="mu" id="subtitle"></span>
+      <button type="button" id="refresh" class="btn sm" lang="en">Refresh</button>
+    </header>
+
+    <!-- QUEUE -->
+    <div class="page" id="page-queue">
+      <div class="bar" lang="en">
+        <div class="seg" id="segView" role="tablist">
+          <button type="button" data-view="open" aria-selected="true">Open</button>
+          <button type="button" data-view="reviewed" aria-selected="false">Reviewed</button>
+          <button type="button" data-view="all" aria-selected="false">All</button>
+        </div>
+        <div class="chips" id="prioChips"></div>
+        <select id="fType" aria-label="Alert type">
+          <option value="">All types</option>
+          <option value="malicious_hash">hash</option>
+          <option value="suspicious_url">url</option>
+          <option value="suspicious_login">login</option>
+        </select>
+        <select id="fVerdict" aria-label="Verdict">
+          <option value="">All verdicts</option>
+          <option value="malicious">malicious</option><option value="suspicious">suspicious</option>
+          <option value="unknown">unknown</option><option value="clean">clean</option>
+        </select>
+        <span class="entity" id="entityChip" hidden></span>
+        <input id="q" type="search" placeholder="Search IOC, host, user, rule…  ( / )" aria-label="Search" maxlength="100">
+      </div>
+      <div class="qbody" id="qbody">
+        <div class="tbl" id="queueTable"></div>
+        <aside class="drawer" id="drawer" aria-live="polite"></aside>
+      </div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="page" id="page-incidents" hidden>
+      <div class="bar" lang="en">
+        <div class="seg" id="segInc">
+          <button type="button" data-view="open" aria-selected="true">Open</button>
+          <button type="button" data-view="all" aria-selected="false">All</button>
+        </div>
+        <span class="mu small">Son 7 gündə eyni host-a (host yoxdursa, istifadəçiyə) aid ən azı 2 alert bir incident sayılır.</span>
+      </div>
+      <div class="tbl pad" id="incTable"></div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="page scroll" id="page-overview" hidden>
+      <div class="kpis" id="kpis"></div>
+      <div class="charts">
+        <figure class="chart wide"><figcaption lang="en">Alerts per hour · last 24h</figcaption><div id="chHourly"></div></figure>
+        <figure class="chart"><figcaption lang="en">Open by priority</figcaption><div id="chPriority"></div></figure>
+        <figure class="chart"><figcaption lang="en">Verdicts</figcaption><div id="chVerdict"></div></figure>
+      </div>
+    </div>
+
+    <!-- SYSTEM -->
+    <div class="page scroll" id="page-health" hidden>
+      <section class="grid3" id="hMode"></section>
+      <h2 class="ph" lang="en">Threat intel</h2>
+      <p class="mu small">Vəziyyət (ok / degraded / down) son 15 dəqiqədə gələn alert-lərin real intel cavablarından hesablanır; "circuit open" worker-in breaker-i açıq olduğu üçün sorğu göndərilməyən hallardır. Kvota sayğacları Redis-dəndir (bu gün, UTC).</p>
+      <section class="grid3" id="hIntel"></section>
+      <h2 class="ph" lang="en">Pipeline queue</h2>
+      <section class="grid4" id="hQueue"></section>
+    </div>
+
+    <!-- RULES -->
+    <div class="page scroll" id="page-rules" hidden>
+      <section class="grid3 wide1" id="rProgress"></section>
+      <h2 class="ph" lang="en">Rule performance</h2>
+      <p class="mu small">Hər qayda üçün son qərarlar və analitik feedback-i. Razılaşma 70%-dən aşağı olan qaydalar tuning namizədidir.</p>
+      <div class="tbl boxed" id="rTable"></div>
     </div>
   </section>
-
-  <section class="toolbar" aria-label="Filtr">
-    <nav class="tabs" role="tablist">
-      <button type="button" role="tab" data-view="open" aria-selected="true">Open</button>
-      <button type="button" role="tab" data-view="reviewed" aria-selected="false">Reviewed</button>
-      <button type="button" role="tab" data-view="all" aria-selected="false">All</button>
-    </nav>
-    <input id="q" type="search" placeholder="Search: IOC, host, user, rule…" aria-label="Axtarış" maxlength="100">
-    <select id="fPriority" aria-label="Prioritet">
-      <option value="">All priorities</option><option>P1</option><option>P2</option><option>P3</option><option>P4</option>
-    </select>
-    <select id="fType" aria-label="Alert tipi">
-      <option value="">All types</option>
-      <option value="malicious_hash">hash</option>
-      <option value="suspicious_url">url</option>
-      <option value="suspicious_login">login</option>
-    </select>
-    <select id="fVerdict" aria-label="Sistemin qərarı">
-      <option value="">All verdicts</option>
-      <option value="malicious">malicious</option><option value="suspicious">suspicious</option>
-      <option value="unknown">unknown</option><option value="clean">clean</option>
-    </select>
-    <button type="button" id="clear" class="btn ghost">Reset</button>
-    <span class="muted small" id="count"></span>
-  </section>
-
-  <div class="split">
-    <div class="list" id="list" aria-label="Alert-lər"></div>
-    <article class="detail" id="detail" aria-live="polite">
-      <p class="muted empty">Soldan alert seçin. Klaviatura: <kbd>j</kbd>/<kbd>k</kbd> keçid, <kbd>a</kbd> approve, <kbd>r</kbd> reject, <kbd>?</kbd> kömək.</p>
-    </article>
-  </div>
- </div>
-
- <div id="page-health" hidden>
-  <section class="cards3" id="hMode" aria-label="Auto-close"></section>
-  <h2 class="ph" lang="en">Threat intel</h2>
-  <p class="muted small">Vəziyyət (ok / degraded / down) son 15 dəqiqədə gələn alert-lərin real intel cavablarından hesablanır; "circuit open" worker-in breaker-i açıq olduğu üçün sorğu göndərilməyən hallardır. Kvota sayğacları Redis-dəndir (bu gün, UTC).</p>
-  <section class="intel3" id="hIntel"></section>
-  <h2 class="ph" lang="en">Pipeline queue</h2>
-  <section class="cards4" id="hQueue"></section>
- </div>
-
- <div id="page-rules" hidden>
-  <section class="progress" id="rProgress"></section>
-  <h2 class="ph" lang="en">Rule performance</h2>
-  <p class="muted small">Hər qayda üçün son qərarlar və analitik feedback-i. Razılaşma 70%-dən aşağı olan qaydalar tuning namizədidir.</p>
-  <div class="tbl rules" id="rTable"></div>
- </div>
-</main>
+</div>
 
 <div class="overlay" id="helpBox" hidden>
   <div class="card help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <h1 id="helpTitle" lang="en">Keyboard shortcuts</h1>
-    <dl class="kv keys">
-      <dt><kbd>j</kbd> / <kbd>k</kbd></dt><dd>növbəti / əvvəlki alert</dd>
+    <dl class="keys">
+      <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>növbəti / əvvəlki alert</dd>
       <dt><kbd>a</kbd></dt><dd>Approve: sistemin verdict-ini təsdiqlə</dd>
       <dt><kbd>r</kbd></dt><dd>Reject: düzgün verdict-i seç</dd>
+      <dt><kbd>i</kbd></dt><dd>alert-in incident-ini aç</dd>
       <dt><kbd>o</kbd></dt><dd>case-i TheHive-da aç</dd>
       <dt><kbd>/</kbd></dt><dd>axtarışa keç</dd>
-      <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Alerts / System / Rules</dd>
-      <dt><kbd>Esc</kbd></dt><dd>bağla</dd>
+      <dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Queue · Incidents · Overview · System · Rules</dd>
+      <dt><kbd>Esc</kbd></dt><dd>detalı / pəncərəni bağla</dd>
     </dl>
     <button type="button" class="btn" id="helpClose">Bağla</button>
   </div>

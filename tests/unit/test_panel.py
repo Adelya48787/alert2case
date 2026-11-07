@@ -82,6 +82,8 @@ def test_filters_passed_through(client):
         "alert_type": "suspicious_url",
         "verdict": "malicious",
         "q": "duckdns",
+        "host": None,
+        "user": None,
     }
 
 
@@ -178,6 +180,7 @@ def test_detail_defangs_iocs(monkeypatch):
     assert "http://" not in d["title"] and "evil.example" not in d["title"]
     assert all("evil.example" not in o["value"] for o in d["observables"])
     assert "evidence" not in d["enrichment"]["providers"][0]  # xam intel cavabı panelə çıxmır
+    assert d["enrichment"]["providers"][0]["facts"] == {}  # "x" xülasə sahəsi deyil
 
 
 @pytest.mark.parametrize(
@@ -243,3 +246,28 @@ def test_health_reports_no_secrets(monkeypatch):
     assert vt["configured"] is True and vt["state"] == "ok" and vt["quota_used"] == 7
     assert "SECRET-VT-KEY-123" not in str(h)
     assert "base_url" not in str(h) and "http" not in str(h)
+
+
+def test_provider_facts_whitelist():
+    """Xülasəyə yalnız tanınan rəqəm sahələri düşür: mətn, URL və bilinməyən açarlar düşmür."""
+    pr = {
+        "provider": "virustotal",
+        "evidence": {
+            "malicious": 54,
+            "engines": 119,
+            "permalink": "https://vt/x",
+            "suspicious": True,
+            "raw": {"a": 1},
+        },
+    }
+    assert queries.provider_facts(pr) == {"malicious": 54, "engines": 119}
+    assert queries.provider_facts({"provider": "unknown", "evidence": {"x": 1}}) == {}
+    assert queries.provider_facts({"provider": "otx"}) == {}
+
+
+def test_incidents_bad_view_rejected(client):
+    assert client.get("/api/panel/incidents?view=x", headers=ADMIN).status_code == 400
+
+
+def test_entity_filter_length_limited(client):
+    assert client.get("/api/panel/alerts?host=" + "h" * 201, headers=ADMIN).status_code == 422

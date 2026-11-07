@@ -20,6 +20,7 @@ _LIST = """
 SELECT a.alert_id, a.source_ref, a.alert_type, a.status, a.received_at, a.occurrence_count,
        a.doc->>'title' AS title, a.doc->>'host' AS host, a.doc->>'user' AS "user",
        jsonb_array_length(COALESCE(a.doc->'observables', '[]'::jsonb)) AS ioc_count,
+       (a.doc->'enrichment'->>'reputation_score')::numeric AS score,
        d.verdict, d.priority, d.action, d.rule_id, d.shadow,
        c.backend AS case_backend, c.case_id,
        EXTRACT(EPOCH FROM (c.created_at - a.received_at)) AS case_seconds,
@@ -45,6 +46,8 @@ WHERE d.verdict IS NOT NULL
        OR d.rule_id ILIKE $6 ESCAPE '\\'
        OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(a.doc->'observables', '[]'::jsonb)) o
                   WHERE o->>'value' ILIKE $6 ESCAPE '\\'))
+  AND ($7::text IS NULL OR a.doc->>'host' = $7)
+  AND ($8::text IS NULL OR a.doc->>'user' = $8)
 ORDER BY d.priority, a.received_at DESC
 LIMIT $2
 """
@@ -124,6 +127,59 @@ LIMIT 10
 """
 
 
+# Incident: son 7 gündə eyni host-a (host yoxdursa, istifadəçiyə) aid ən azı 2 alert
+_INCIDENTS = """
+WITH x AS (
+  SELECT a.alert_id, a.alert_type, a.received_at,
+         CASE WHEN COALESCE(a.doc->>'host', '') <> '' THEN 'host' ELSE 'user' END AS kind,
+         COALESCE(NULLIF(a.doc->>'host', ''), a.doc->>'user') AS entity,
+         d.priority, d.verdict, (f.alert_id IS NULL AND a.status <> 'closed_auto') AS is_open
+  FROM alerts a
+  JOIN LATERAL (SELECT priority, verdict FROM decisions WHERE alert_id = a.alert_id
+                ORDER BY decided_at DESC LIMIT 1) d ON true
+  LEFT JOIN LATERAL (SELECT alert_id FROM feedback WHERE alert_id = a.alert_id LIMIT 1) f ON true
+  WHERE a.received_at > now() - interval '7 days'
+)
+SELECT kind, entity, count(*) AS alerts, count(*) FILTER (WHERE is_open) AS open,
+       min(priority) AS priority,
+       min(priority) FILTER (WHERE is_open) AS open_priority,
+       count(*) FILTER (WHERE priority = 'P1') AS p1,
+       count(*) FILTER (WHERE verdict = 'malicious') AS malicious,
+       count(*) FILTER (WHERE verdict = 'suspicious') AS suspicious,
+       count(*) FILTER (WHERE verdict = 'unknown') AS unknown,
+       count(*) FILTER (WHERE verdict = 'clean') AS clean,
+       array_agg(DISTINCT alert_type) AS types,
+       min(received_at) AS first_seen, max(received_at) AS last_seen
+FROM x
+WHERE entity IS NOT NULL
+GROUP BY kind, entity
+HAVING count(*) >= 2 AND ($1 = 'all' OR count(*) FILTER (WHERE is_open) > 0)
+ORDER BY COALESCE(min(priority) FILTER (WHERE is_open), min(priority)), count(*) DESC
+LIMIT 100
+"""
+
+INCIDENT_VIEWS = {"open", "all"}
+
+
+async def incidents(view: str = "open") -> list[dict]:
+    p = await db.pool()
+    return [{**dict(r), "types": sorted(r["types"] or [])} for r in await p.fetch(_INCIDENTS, view)]
+
+
+# Xülasə üçün provider sübutundan yalnız bu rəqəmlər çıxır (xam cavab panelə getmir)
+FACT_KEYS = {
+    "virustotal": ("malicious", "suspicious", "engines"),
+    "abuseipdb": ("confidence", "reports"),
+    "otx": ("pulses",),
+}
+
+
+def provider_facts(pr: dict) -> dict:
+    ev = pr.get("evidence") or {}
+    keys = FACT_KEYS.get(pr.get("provider"), ())
+    return {k: ev[k] for k in keys if isinstance(ev.get(k), (int, float)) and not isinstance(ev.get(k), bool)}
+
+
 def search_pattern(q: str | None) -> str | None:
     """Axtarış mətnini ILIKE nümunəsinə çevirir.
 
@@ -163,6 +219,8 @@ async def list_alerts(view: str = "open", limit: int = 100, filters: dict | None
         f.get("alert_type"),
         f.get("verdict"),
         search_pattern(f.get("q")),
+        f.get("host"),
+        f.get("user"),
     )
     return [{**dict(r), "title": defang(r["title"] or "")} for r in rows]
 
@@ -243,7 +301,10 @@ async def detail(alert_id: UUID) -> dict | None:
             "confidence": enr.get("confidence"),
             "conflict": enr.get("conflict"),
             "providers": [
-                {k: pr.get(k) for k in ("provider", "ioc_type", "status", "score", "cached", "note")}
+                {
+                    **{k: pr.get(k) for k in ("provider", "ioc_type", "status", "score", "cached", "note")},
+                    "facts": provider_facts(pr),
+                }
                 for pr in enr.get("providers") or []
             ],
         },
@@ -252,6 +313,10 @@ async def detail(alert_id: UUID) -> dict | None:
         "case_link": case_link(case),
         "feedback": [dict(f) for f in fbs],
         "related": [{**dict(r), "title": defang(r["title"] or "")} for r in related],
+        "context": {
+            k: (doc.get("context") or {}).get(k)
+            for k in ("asset_criticality", "user_privileged", "user_vip", "allowlisted")
+        },
         "timeline": await db.timeline(alert_id),
     }
 

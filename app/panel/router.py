@@ -35,6 +35,8 @@ def build_router(require_admin) -> APIRouter:
         alert_type: str | None = Query(None),
         verdict: str | None = Query(None),
         q: str | None = Query(None, max_length=100),
+        host: str | None = Query(None, max_length=200),
+        user: str | None = Query(None, max_length=200),
     ):
         # Filtr dəyərləri bağlı siyahılardan yoxlanılır; axtarış mətni yalnız parametr kimi ötürülür
         for name, value, allowed in (
@@ -45,7 +47,14 @@ def build_router(require_admin) -> APIRouter:
         ):
             if value is not None and value not in allowed:
                 raise HTTPException(status_code=400, detail=f"{name}: {', '.join(sorted(allowed))}")
-        filters = {"priority": priority, "alert_type": alert_type, "verdict": verdict, "q": q}
+        filters = {
+            "priority": priority,
+            "alert_type": alert_type,
+            "verdict": verdict,
+            "q": q,
+            "host": host,
+            "user": user,
+        }
         return await queries.list_alerts(view, limit, filters)
 
     @r.get("/alerts/{alert_id}")
@@ -58,6 +67,12 @@ def build_router(require_admin) -> APIRouter:
     @r.get("/stats")
     async def stats():
         return await queries.stats()
+
+    @r.get("/incidents")
+    async def incident_list(view: str = Query("open")):
+        if view not in queries.INCIDENT_VIEWS:
+            raise HTTPException(status_code=400, detail="view: all, open")
+        return await queries.incidents(view)
 
     @r.get("/health")
     async def system_health():
