@@ -85,13 +85,15 @@ def check_auth() -> None:
         ("POST", "/feedback/thehive", b"{}", j, 403),
         ("POST", "/feedback/thehive", b"{}", {"Authorization": "Bearer wrong", **j}, 403),
         ("POST", "/stage/act", b"{}", j, 403),
+        ("GET", "/api/panel/alerts", b"", {}, 403),
+        ("GET", "/api/panel/stats", b"", bad, 403),
     ]
     got = [(m, p, http(m, p, b, h), exp) for m, p, b, h, exp in cases]
     wrong = [f"{m} {p} → {c} (gözlənilən {e})" for m, p, c, e in got if c != e]
     record(
         1,
         not wrong,
-        "token-siz və səhv token ilə 11 sorğu",
+        "token-siz və səhv token ilə 13 sorğu",
         f"{len(got) - len(wrong)}/{len(got)} endpoint 401/403 qaytardı"
         + (f"; {'; '.join(wrong)}" if wrong else ""),
     )

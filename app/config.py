@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     case_backend: str = "file"  # file | thehive
     thehive_url: str = "http://localhost:9000"
     thehive_api_key: str = ""
+    # Brauzerin açdığı TheHive ünvanı (thehive_url Docker daxilindədir, brauzer onu görmür)
+    thehive_public_url: str = "http://localhost:9000"
     slack_webhook_url: str = ""
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""

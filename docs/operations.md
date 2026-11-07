@@ -36,6 +36,31 @@ docker compose exec -T redis redis-cli XPENDING alerts.in pipeline   # emalda ol
 
 Grafana (<http://localhost:3000>, `make up-obs`): DLQ dərinliyi, mərhələ vaxtları, intel nəticələri, qəbul → hərəkət vaxtı.
 
+## Analitik paneli
+
+**Simptom:** analitik case-ləri nəzərdən keçirməli və ya sistemin "bağlayardım" qərarlarını yoxlamalıdır.
+
+Brauzerdə <http://localhost:8000/panel/> açın, admin token-i və adınızı yazın. Token yalnız həmin sekmədə saxlanılır.
+
+Solda bölmələr var, aşağı küncdə isə həmişə auto-close vəziyyəti və intel mənbələrinin halı görünür. "Live" açıq olanda panel hər 30 saniyədən bir yenilənir.
+
+- **Queue:** alert-lər cədvəldə, əvvəl prioritetə, sonra yaşa görə düzülür. Siyahını prioritet, alert tipi və verdict üzrə süzmək olar. Axtarış IOC, host, istifadəçi və qayda adında işləyir, defang formanı (`hxxp`, `[.]`) da qəbul edir. Sətrə klikləyəndə detal sağda açılır. Detalın yuxarısında "Why …" xülasəsi var: hansı intel mənbəyi nə deyib, asset kritikliyi, eyni host-da və ya istifadəçidə başqa alert-lər. Altında bunlar gəlir: Approve/Reject, Evidence (mənbə üzrə skor), Incident, Decision (qayda, səbəblər, "Open in TheHive ↗"), IOCs, Timeline. Timeline alert-in API-yə gəldiyi andan başlayır: worker götürənə qədər keçən vaxt "queue" mərhələsi kimi göstərilir.
+- **Incidents:** son 7 gündə eyni host-a (host yoxdursa, eyni istifadəçiyə) aid ən azı 2 alert bir sətirdə qruplaşır: açıq/cəmi, verdict paylanması, tiplər. "Review →" Queue-nu həmin entity ilə süzür.
+- **Overview:** açıq case-lər, P1, son 24 saat, qəbul → case vaxtının median və p90 dəyəri, analitiklə razılaşma, saatlıq qrafik, prioritet və verdict paylanması.
+- **System:** auto-close və shadow mode vəziyyəti, case backend; hər intel mənbəyi üçün ok / degraded / down nişanı (son 15 dəqiqənin real cavablarına görə; "circuit open" breaker-in açıq olduğunu göstərir), gündəlik kvota; növbə və DLQ dərinliyi. Chaos testində VirusTotal burada "down" görünür. Yan paneldəki "Auto-close" yazısı API-nin `.env` konfiqurasiyasıdır.
+- **Rules:** hər qayda üçün alert sayı, feedback və analitiklə razılaşma (70%-dən aşağı → "tuning"). ADR-0003 üçün shadow review irəliləyişi: "sistem bağlayardı" deyilən və analitikin baxdığı real alert-lər (dataset alert-ləri sayılmır), hədəf 30, would-miss hədəfi 0.
+- **TheHive linki** `THEHIVE_PUBLIC_URL` ilə qurulur (standart: `http://localhost:9000`).
+
+Klaviatura: `j`/`k` keçid, `a` approve, `r` reject, `i` incident, `o` TheHive, `/` axtarış (`Esc` ilə çıx), `1`–`5` bölmələr, `?` kömək.
+
+| Simptom | Səbəb | Həll |
+|---|---|---|
+| "Token qəbul olunmadı" | Token səhvdir və ya rotasiya olunub | `.env`-dəki `ADMIN_TOKEN` |
+| Siyahı boşdur | Bütün alert-lərə rəy verilib, filtr qalıb və ya alert yoxdur | "All", entity filtrini ✕ ilə sil; `make simulate` |
+| Səhifə açılır, amma düymələr işləmir | Brauzer köhnə JS-i cache-dən götürür | `Ctrl+Shift+R` |
+
+Panel rəyi `feedback` cədvəlinə `source=manual` ilə yazılır və audit-ə düşür: `python -m tools.tuner` onu nəzərə alır.
+
 ## Auto-close-u dərhal dayandırmaq (kill switch)
 
 **Simptom:** sistem bağlamamalı olduğu alert-i bağlayıb və ya bağlamaya şübhə var.
