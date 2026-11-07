@@ -50,6 +50,14 @@ Yuxarıda dashboard var: açıq case-lər və P1 sayı, son 24 saatda gələn al
 | Siyahı boşdur | Bütün alert-lərə rəy verilib və ya alert yoxdur | "Hamısı" tabı; `make simulate` |
 | Səhifə açılır, amma düymələr işləmir | Brauzer köhnə JS-i cache-dən götürür | `Ctrl+Shift+R` |
 
+Yuxarıdakı keçidlər:
+
+- **Alerts:** dashboard, siyahı və detal. Case TheHive-dadırsa, "Open in TheHive ↗" linki görünür. Link `THEHIVE_PUBLIC_URL` ilə qurulur, standart dəyəri `http://localhost:9000`-dır.
+- **System:** auto-close və shadow mode vəziyyəti, case backend; hər intel mənbəyi üçün ok / degraded / down nişanı (son 15 dəqiqənin real cavablarına görə; "circuit open" breaker-in açıq olduğunu göstərir), gündəlik kvota; növbə və DLQ dərinliyi. Chaos testində VirusTotal burada "down" görünür. Yuxarıdakı "Auto-close: OFF" nişanı API-nin `.env` konfiqurasiyasıdır.
+- **Rules:** hər qayda üçün alert sayı, feedback və analitiklə razılaşma (70%-dən aşağı → "tuning"). ADR-0003 üçün shadow review irəliləyişi: "sistem bağlayardı" deyilən və analitikin baxdığı real alert-lər (dataset alert-ləri sayılmır), hədəf 30, would-miss hədəfi 0.
+
+Klaviatura: `j`/`k` keçid, `a` approve, `r` reject, `o` TheHive, `/` axtarış, `1`/`2`/`3` bölmələr, `?` kömək.
+
 Panel rəyi `feedback` cədvəlinə `source=manual` ilə yazılır və audit-ə düşür: `python -m tools.tuner` onu nəzərə alır.
 
 ## Auto-close-u dərhal dayandırmaq (kill switch)

@@ -6,14 +6,14 @@
   var $ = function (id) { return document.getElementById(id); };
   var SVG = "http://www.w3.org/2000/svg";
   var REFRESH_MS = 30000;
-  var state = { view: "open", selected: null, rows: [], filters: { priority: "", alert_type: "", verdict: "", q: "" }, timer: null };
+  var state = { page: "alerts", detail: null, view: "open", selected: null, rows: [], filters: { priority: "", alert_type: "", verdict: "", q: "" }, timer: null };
   // Texniki terminlər ingiliscə qalır (SOC dilində olduğu kimi); izah cümlələri azərbaycanca
   var VERDICT_AZ = { malicious: "malicious", suspicious: "suspicious", unknown: "unknown", clean: "clean" };
   var TYPE_AZ = { malicious_hash: "hash", suspicious_url: "url", suspicious_login: "login" };
   var STAGE_AZ = { ingest: "ingest", normalize: "normalize", enrich: "enrich", decide: "decide", correlate: "correlate",
     act: "act", notify: "notify", feedback: "feedback" };
   var STATUS_AZ = { ok: "ok", error: "error", failed: "failed", not_found: "not found", rate_limited: "rate limited",
-    disabled: "disabled", skipped: "skipped", partial: "partial" };
+    disabled: "disabled", skipped: "skipped", partial: "partial", circuit_open: "circuit open" };
   var REL_AZ = { ioc: "same IOC", host: "same host", user: "same user" };
   // Sistemin verdict-i → analitikin "təsdiqlə" rəyi (feedback yalnız malicious/suspicious/clean qəbul edir)
   var CONFIRM = { malicious: "malicious", suspicious: "suspicious", unknown: "suspicious", clean: "clean" };
@@ -80,7 +80,7 @@
   // ---------- giriş ----------
   function showApp(on) {
     $("login").hidden = on; $("app").hidden = !on;
-    ["liveBox", "who", "refresh", "logout"].forEach(function (id) { $(id).hidden = !on; });
+    ["liveBox", "who", "refresh", "logout", "views", "help"].forEach(function (id) { $(id).hidden = !on; });
     $("who").textContent = on ? "analyst: " + (read("a2c-analyst") || "") : "";
     schedule();
   }
@@ -140,8 +140,10 @@
   }
   async function load(manual) {
     try {
-      var res = await Promise.all([api(listUrl()), api("/api/panel/stats")]);
-      state.rows = res[0]; renderList(); renderDash(res[1]);
+      var h = await api("/api/panel/health"); renderMode(h);
+      if (state.page === "health") renderHealth(h);
+      else if (state.page === "rules") renderRules(await api("/api/panel/rules"));
+      else { var res = await Promise.all([api(listUrl()), api("/api/panel/stats")]); state.rows = res[0]; renderList(); renderDash(res[1]); }
       $("updated").textContent = "updated " + new Date().toLocaleTimeString("az-AZ");
       if (manual) toast("Yeniləndi");
     } catch (err) { if (err.message !== "forbidden") toast("Yüklənmədi: " + err.message); }
@@ -275,6 +277,7 @@
     return dl;
   }
   function renderDetail(a) {
+    state.detail = a;
     var box = $("detail"); box.textContent = "";
     var d = a.decision || {};
 
@@ -290,6 +293,10 @@
     meta.appendChild(el("span", "mono", a.source_ref));
     meta.appendChild(el("span", null, fmt(a.received_at)));
     if (a.case && a.case.created_at) meta.appendChild(el("span", null, "time to case: " + dur((new Date(a.case.created_at) - new Date(a.received_at)) / 1000)));
+    if (a.case_link && /^https?:\/\//.test(a.case_link)) {
+      var lk = el("a", "caselink", "Open in TheHive ↗"); lk.href = a.case_link; lk.target = "_blank"; lk.rel = "noopener noreferrer";
+      lk.title = "o"; meta.appendChild(lk);
+    } else if (a.case) meta.appendChild(el("span", "mono", a.case.backend + " · " + a.case.case_id));
     head.appendChild(meta);
     box.appendChild(head);
 
@@ -446,6 +453,7 @@
     var send = el("button", "btn primary", "Submit feedback"); send.type = "submit";
     form.appendChild(sel); form.appendChild(note); form.appendChild(send); wrap.appendChild(form);
 
+    ok.id = "btnApprove"; no.id = "btnReject";
     ok.addEventListener("click", function () { submit(a, CONFIRM[d.verdict], "", [ok, no]); });
     no.addEventListener("click", function () { form.hidden = !form.hidden; if (!form.hidden) sel.focus(); });
     form.addEventListener("submit", function (ev) { ev.preventDefault(); submit(a, sel.value, note.value.trim(), [ok, no, send]); });
@@ -464,6 +472,136 @@
       buttons.forEach(function (b) { b.disabled = false; });
     }
   }
+
+  // ---------- bölmələr ----------
+  function setPage(page) {
+    state.page = page;
+    ["alerts", "health", "rules"].forEach(function (p) { $("page-" + p).hidden = p !== page; });
+    document.querySelectorAll("#views button").forEach(function (b) {
+      if (b.dataset.page === page) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    load();
+  }
+  document.querySelectorAll("#views button").forEach(function (b) { b.addEventListener("click", function () { setPage(b.dataset.page); }); });
+
+  // ---------- system health ----------
+  function renderMode(h) {
+    var m = $("mode"), on = h.auto_close_enabled && !h.shadow_mode;
+    m.hidden = false; m.className = "mode" + (on ? " on" : "");
+    m.textContent = on ? "Auto-close: ON" : "Auto-close: OFF" + (h.shadow_mode ? " · shadow" : "");
+    m.title = "AUTO_CLOSE_ENABLED=" + h.auto_close_enabled + ", SHADOW_MODE=" + h.shadow_mode;
+  }
+  function hc(cls, label, value, sub) {
+    var c = el("div", "hc " + (cls || "")), l = el("div", "lbl", label); l.lang = "en";
+    c.appendChild(l); c.appendChild(el("div", "val", value)); if (sub) c.appendChild(el("div", "sub", sub)); return c;
+  }
+  function renderHealth(h) {
+    var m = $("hMode"); m.textContent = "";
+    var closing = h.auto_close_enabled && !h.shadow_mode;
+    m.appendChild(hc(closing ? "bad" : "good", "Auto-close", closing ? "ON" : "OFF",
+      closing ? "Sistem təmiz alert-ləri özü bağlayır" : "Sistem heç bir alert-i özü bağlamır (ADR-0003)"));
+    m.appendChild(hc(h.shadow_mode ? "good" : "warn", "Shadow mode", h.shadow_mode ? "ON" : "OFF",
+      (h.decisions_24h.shadow || 0) + " / " + (h.decisions_24h.decided || 0) + " qərar son 24 saatda \"sistem bağlayardı\""));
+    m.appendChild(hc("", "Case backend", h.case_backend, h.case_backend === "thehive" ? "case-lər TheHive-da açılır" : "case-lər faylda (var/cases)"));
+
+    var box = $("hIntel"); box.textContent = "";
+    h.providers.forEach(function (p) {
+      var c = el("div", "hc"), head = el("div", "head");
+      head.appendChild(el("b", null, p.provider));
+      head.appendChild(el("span", "state " + p.state, p.configured ? p.state : "no key"));
+      c.appendChild(head);
+      var cnt = el("div", "counts"), lh = p.last_hour || {}, keys = Object.keys(lh);
+      cnt.appendChild(el("span", "small", "son 1 saat:"));
+      if (!keys.length) cnt.appendChild(el("span", null, "sorğu yoxdur"));
+      keys.forEach(function (k) {
+        var x = el("span", null, (k === "cached" ? "from cache" : (STATUS_AZ[k] || k)) + " "); x.appendChild(el("b", null, lh[k])); cnt.appendChild(x);
+      });
+      c.appendChild(cnt);
+      var q = el("div", "quota");
+      var used = p.quota_used == null ? "—" : p.quota_used;
+      q.appendChild(el("span", null, "Daily quota: " + used + " / " + p.quota_day + " · limit " + p.per_minute + "/dəq"));
+      var mt = el("div", "meter"), pct = p.quota_used == null ? 0 : Math.min(100, 100 * p.quota_used / p.quota_day);
+      var bar = el("i", pct >= 80 ? "m-high" : pct >= 50 ? "m-mid" : null); bar.style.width = Math.max(pct, 1) + "%";
+      mt.appendChild(bar); q.appendChild(mt); c.appendChild(q);
+      box.appendChild(c);
+    });
+
+    var qb = $("hQueue"); qb.textContent = ""; var qu = h.queue || {};
+    if (!qu.available) { qb.appendChild(hc("bad", "Redis", "unavailable", "növbə məlumatı oxunmadı")); return; }
+    qb.appendChild(hc(qu.lag ? "warn" : "good", "Waiting", qu.lag, "hələ heç kim götürməyib"));
+    qb.appendChild(hc("", "In progress", qu.pending, "worker emal edir"));
+    qb.appendChild(hc(qu.alerts_dlq ? "bad" : "good", "alerts.dlq", qu.alerts_dlq, "3 cəhddən sonra düşənlər"));
+    qb.appendChild(hc(qu.cases_dlq ? "bad" : "good", "cases.dlq", qu.cases_dlq, "case açılmayanlar (TheHive)"));
+  }
+
+  // ---------- rule performance ----------
+  function renderRules(r) {
+    var sp = r.shadow_progress || {}, box = $("rProgress"); box.textContent = "";
+    var real = sp.reviewed_real || 0, target = sp.target || 30;
+    var c = hc(real >= target ? "good" : "", "Auto-close readiness · shadow review", real + " / " + target,
+      "Shadow mode-da \"sistem bağlayardı\" deyilən və analitikin baxdığı real alert-lər (ADR-0003). Dataset alert-ləri (HASH-/URL-/LOGIN-NN) sayılmır: onlarla birlikdə " + (sp.reviewed || 0) + ".");
+    var bb = el("div", "bigbar"), bi = el("i"); bi.style.width = Math.min(100, 100 * real / target) + "%"; bb.appendChild(bi);
+    c.insertBefore(bb, c.lastChild); box.appendChild(c);
+    box.appendChild(hc((sp.would_miss_real || 0) ? "bad" : "good", "Would-miss (target 0)", sp.would_miss_real || 0,
+      "sistem bağlayardı, analitik malicious/suspicious dedi · dataset daxil: " + (sp.would_miss || 0)));
+    var tot = r.rules.reduce(function (a, x) { return a + x.reviewed; }, 0), ag = r.rules.reduce(function (a, x) { return a + x.agree; }, 0);
+    box.appendChild(hc("", "Overall agreement", tot ? Math.round(100 * ag / tot) + "%" : "—", tot + " feedback, " + r.rules.length + " qayda"));
+
+    var wrap = $("rTable"); wrap.textContent = "";
+    var t = el("table"), tr = el("tr");
+    [["Rule"], ["Alerts", "num"], ["Shadow", "num"], ["Feedback", "num"], ["Agreement"], ["Top verdict"], ["Last seen"]].forEach(function (h) {
+      tr.appendChild(el("th", h[1] || null, h[0]));
+    });
+    t.appendChild(tr);
+    r.rules.forEach(function (x) {
+      var row = el("tr");
+      row.appendChild(el("td", "mono", x.rule_id));
+      row.appendChild(el("td", "num", x.alerts)); row.appendChild(el("td", "num", x.shadow)); row.appendChild(el("td", "num", x.reviewed));
+      var td = el("td"), a = el("div", "agree");
+      if (x.reviewed) {
+        var pct = Math.round(100 * x.agree / x.reviewed), mt = el("div", "meter"), bar = el("i", pct < 70 ? "m-high" : null);
+        bar.style.width = Math.max(pct, 2) + "%"; mt.appendChild(bar); a.appendChild(mt);
+        var lab = el("span", null, pct + "% "); if (pct < 70) lab.appendChild(el("span", "tune", "tuning")); a.appendChild(lab);
+      } else a.appendChild(el("span", "muted", "—"));
+      td.appendChild(a); row.appendChild(td);
+      var vt = el("td"); vt.appendChild(el("span", "pill v-" + x.top_verdict, x.top_verdict)); row.appendChild(vt);
+      var ls = el("td", "muted", ago(x.last_seen)); ls.title = fmt(x.last_seen); row.appendChild(ls);
+      t.appendChild(row);
+    });
+    wrap.appendChild(t);
+  }
+
+  // ---------- klaviatura ----------
+  function move(step) {
+    if (!state.rows.length) return;
+    var i = state.rows.findIndex(function (r) { return r.alert_id === state.selected; });
+    i = i < 0 ? 0 : Math.max(0, Math.min(state.rows.length - 1, i + step));
+    select(state.rows[i].alert_id);
+    var cur = document.querySelector('.row[aria-current="true"]'); if (cur) cur.scrollIntoView({ block: "nearest" });
+  }
+  function showHelp(on) { $("helpBox").hidden = !on; if (on) $("helpClose").focus(); }
+  $("help").addEventListener("click", function () { showHelp(true); });
+  $("helpClose").addEventListener("click", function () { showHelp(false); });
+  $("helpBox").addEventListener("click", function (e) { if (e.target === $("helpBox")) showHelp(false); });
+  document.addEventListener("keydown", function (e) {
+    if ($("app").hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Escape") { showHelp(false); var f = document.querySelector(".act form"); if (f) f.hidden = true; return; }
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (!$("helpBox").hidden) return;
+    var k = e.key;
+    if (k === "?") { showHelp(true); }
+    else if (k === "1" || k === "2" || k === "3") { setPage(["alerts", "health", "rules"][+k - 1]); }
+    else if (state.page !== "alerts") { return; }
+    else if (k === "j") { move(1); }
+    else if (k === "k") { move(-1); }
+    else if (k === "/") { $("q").focus(); }
+    else if (k === "a" && $("btnApprove") && !$("btnApprove").disabled) { $("btnApprove").click(); }
+    else if (k === "r" && $("btnReject")) { $("btnReject").click(); }
+    else if (k === "o" && state.detail && state.detail.case_link) { var lk = document.querySelector(".caselink"); if (lk) lk.click(); }
+    else return;
+    e.preventDefault();
+  });
 
   // ---------- başlanğıc ----------
   if (read("a2c-token")) { showApp(true); load(); } else { showApp(false); }

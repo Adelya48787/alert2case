@@ -7,6 +7,7 @@ from uuid import UUID
 
 from app import db
 from app.case.base import defang
+from app.config import settings
 
 VIEWS = {"open", "reviewed", "all"}
 PRIORITIES = {"P1", "P2", "P3", "P4"}
@@ -139,6 +140,18 @@ def search_pattern(q: str | None) -> str | None:
     return f"%{q}%"
 
 
+def case_link(case) -> str | None:
+    """TheHive case-i üçün brauzerdə açılan link. Fayl backend-i və ya gözlənilməz URL → None."""
+    if not case or case["backend"] != "thehive":
+        return None
+    url = str(case["case_url"] or "")
+    internal = settings.thehive_url.rstrip("/")
+    public = settings.thehive_public_url.rstrip("/")
+    if not url.startswith(internal + "/") or not public.startswith(("http://", "https://")):
+        return None
+    return public + url[len(internal) :]
+
+
 async def list_alerts(view: str = "open", limit: int = 100, filters: dict | None = None) -> list[dict]:
     f = filters or {}
     p = await db.pool()
@@ -236,7 +249,108 @@ async def detail(alert_id: UUID) -> dict | None:
         },
         "decision": dict(dec) if dec else None,
         "case": dict(case) if case else None,
+        "case_link": case_link(case),
         "feedback": [dict(f) for f in fbs],
         "related": [{**dict(r), "title": defang(r["title"] or "")} for r in related],
         "timeline": await db.timeline(alert_id),
     }
+
+
+# ---------- System health ----------
+# Son 1 saatda hər intel mənbəyinin cavab statusları (worker-in breaker-i prosesin yaddaşındadır,
+# API onu görmür: vəziyyət real nəticələrdən hesablanır)
+_INTEL_RECENT = """
+SELECT p->>'provider' AS provider,
+       CASE WHEN p->>'note' = 'circuit open' THEN 'circuit_open' ELSE p->>'status' END AS status,
+       COALESCE((p->>'cached')::boolean, false) AS cached,
+       a.received_at > now() - interval '15 minutes' AS recent,
+       count(*) AS n
+FROM alerts a, jsonb_array_elements(COALESCE(a.doc->'enrichment'->'providers', '[]'::jsonb)) p
+WHERE a.received_at > now() - interval '1 hour'
+GROUP BY 1, 2, 3, 4
+"""
+
+_SHADOW_24H = """
+SELECT count(*) FILTER (WHERE d.shadow) AS shadow, count(*) AS decided
+FROM decisions d WHERE d.decided_at > now() - interval '24 hours'
+"""
+
+
+BAD = ("error", "failed", "rate_limited", "disabled", "skipped", "circuit_open")
+
+
+def provider_state(counts: dict) -> str:
+    """ok / degraded / down / idle: son 15 dəqiqənin cavablarına görə."""
+    live = {k: v for k, v in counts.items() if k != "cached"}
+    total = sum(live.values())
+    if total == 0:
+        return "idle"
+    bad = sum(v for k, v in live.items() if k in BAD)
+    if live.get("ok", 0) + live.get("not_found", 0) == 0 and bad:
+        return "down"
+    return "degraded" if bad / total >= 0.3 else "ok"
+
+
+async def intel_recent() -> dict[str, dict]:
+    """provider → {"hour": {status: n}, "recent": {status: n}} (son 1 saat və son 15 dəqiqə)."""
+    p = await db.pool()
+    out: dict[str, dict] = {}
+    for r in await p.fetch(_INTEL_RECENT):
+        e = out.setdefault(r["provider"], {"hour": {}, "recent": {}})
+        for win in ("hour", "recent") if r["recent"] else ("hour",):
+            c = e[win]
+            c[r["status"]] = c.get(r["status"], 0) + r["n"]
+            if r["cached"]:
+                c["cached"] = c.get("cached", 0) + r["n"]
+    return out
+
+
+async def shadow_24h() -> dict:
+    p = await db.pool()
+    r = await p.fetchrow(_SHADOW_24H)
+    return dict(r) if r else {"shadow": 0, "decided": 0}
+
+
+# ---------- Rule performance ----------
+_RULES = """
+SELECT d.rule_id, count(*) AS alerts,
+       count(*) FILTER (WHERE d.shadow) AS shadow,
+       count(f.alert_id) AS reviewed,
+       count(*) FILTER (WHERE f.alert_id IS NOT NULL AND (f.auto_verdict = f.human_verdict
+                        OR (f.auto_verdict = 'unknown' AND f.human_verdict = 'suspicious'))) AS agree,
+       mode() WITHIN GROUP (ORDER BY d.verdict) AS top_verdict,
+       max(a.received_at) AS last_seen
+FROM alerts a
+JOIN LATERAL (SELECT rule_id, verdict, shadow FROM decisions WHERE alert_id = a.alert_id
+              ORDER BY decided_at DESC LIMIT 1) d ON true
+LEFT JOIN LATERAL (SELECT alert_id, auto_verdict, human_verdict FROM feedback
+                   WHERE alert_id = a.alert_id ORDER BY created_at DESC LIMIT 1) f ON true
+GROUP BY d.rule_id
+ORDER BY alerts DESC
+"""
+
+# ADR-0003 şərtləri: shadow mode-da "sistem bağlayardı" deyilən və analitikin baxdığı alert-lər.
+# Simulyator dataset-i (HASH-/URL-/LOGIN-NN) "dataset-dən kənar" sayılmır.
+_SHADOW_PROGRESS = """
+SELECT count(*) AS reviewed,
+       count(*) FILTER (WHERE f.human_verdict IN ('malicious', 'suspicious')) AS would_miss,
+       count(*) FILTER (WHERE a.source_ref !~ '^(HASH|URL|LOGIN)-[0-9]+$') AS reviewed_real,
+       count(*) FILTER (WHERE a.source_ref !~ '^(HASH|URL|LOGIN)-[0-9]+$'
+                        AND f.human_verdict IN ('malicious', 'suspicious')) AS would_miss_real
+FROM alerts a
+JOIN LATERAL (SELECT shadow FROM decisions WHERE alert_id = a.alert_id
+              ORDER BY decided_at DESC LIMIT 1) d ON d.shadow
+JOIN LATERAL (SELECT human_verdict FROM feedback WHERE alert_id = a.alert_id
+              ORDER BY created_at DESC LIMIT 1) f ON true
+"""
+
+SHADOW_TARGET = 30  # ADR-0003: ən azı 30 görülməmiş alert
+
+
+async def rules() -> dict:
+    p = await db.pool()
+    rows = [dict(r) for r in await p.fetch(_RULES)]
+    sp = await p.fetchrow(_SHADOW_PROGRESS)
+    progress = dict(sp) if sp else {}
+    progress["target"] = SHADOW_TARGET
+    return {"rules": rows, "shadow_progress": progress}

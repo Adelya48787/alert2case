@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.staticfiles import StaticFiles
 
-from app.panel import queries
+from app.panel import health, queries
 
 STATIC = Path(__file__).parent / "static"
 
@@ -58,6 +58,14 @@ def build_router(require_admin) -> APIRouter:
     @r.get("/stats")
     async def stats():
         return await queries.stats()
+
+    @r.get("/health")
+    async def system_health():
+        return await health.snapshot()
+
+    @r.get("/rules")
+    async def rule_performance():
+        return await queries.rules()
 
     return r
 

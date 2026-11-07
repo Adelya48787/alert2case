@@ -11,12 +11,19 @@
 <body>
 <header class="top">
   <b class="brand">alert<span class="two">2</span>case <span class="sub">analyst panel</span></b>
+  <nav class="views" id="views" aria-label="Bölmələr">
+    <button type="button" data-page="alerts" aria-current="page">Alerts</button>
+    <button type="button" data-page="health">System</button>
+    <button type="button" data-page="rules">Rules</button>
+  </nav>
+  <span class="mode" id="mode" lang="en" hidden></span>
   <div class="live" id="liveBox">
     <label class="switch"><input type="checkbox" id="auto" checked> <span>Live</span></label>
     <span class="muted small" id="updated"></span>
   </div>
   <span class="who" id="who"></span>
   <button type="button" id="refresh" class="btn">Refresh</button>
+  <button type="button" id="help" class="btn ghost" title="Klaviatura qısayolları (?)">?</button>
   <button type="button" id="logout" class="btn ghost">Logout</button>
 </header>
 
@@ -35,6 +42,7 @@
 </section>
 
 <main id="app" class="app" hidden>
+ <div id="page-alerts">
   <section class="dash" aria-label="Ümumi vəziyyət">
     <div class="kpis" id="kpis"></div>
     <div class="charts">
@@ -72,10 +80,43 @@
   <div class="split">
     <div class="list" id="list" aria-label="Alert-lər"></div>
     <article class="detail" id="detail" aria-live="polite">
-      <p class="muted empty">Soldan alert seçin.</p>
+      <p class="muted empty">Soldan alert seçin. Klaviatura: <kbd>j</kbd>/<kbd>k</kbd> keçid, <kbd>a</kbd> approve, <kbd>r</kbd> reject, <kbd>?</kbd> kömək.</p>
     </article>
   </div>
+ </div>
+
+ <div id="page-health" hidden>
+  <section class="cards3" id="hMode" aria-label="Auto-close"></section>
+  <h2 class="ph" lang="en">Threat intel</h2>
+  <p class="muted small">Vəziyyət (ok / degraded / down) son 15 dəqiqədə gələn alert-lərin real intel cavablarından hesablanır; "circuit open" worker-in breaker-i açıq olduğu üçün sorğu göndərilməyən hallardır. Kvota sayğacları Redis-dəndir (bu gün, UTC).</p>
+  <section class="intel3" id="hIntel"></section>
+  <h2 class="ph" lang="en">Pipeline queue</h2>
+  <section class="cards4" id="hQueue"></section>
+ </div>
+
+ <div id="page-rules" hidden>
+  <section class="progress" id="rProgress"></section>
+  <h2 class="ph" lang="en">Rule performance</h2>
+  <p class="muted small">Hər qayda üçün son qərarlar və analitik feedback-i. Razılaşma 70%-dən aşağı olan qaydalar tuning namizədidir.</p>
+  <div class="tbl rules" id="rTable"></div>
+ </div>
 </main>
+
+<div class="overlay" id="helpBox" hidden>
+  <div class="card help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <h1 id="helpTitle" lang="en">Keyboard shortcuts</h1>
+    <dl class="kv keys">
+      <dt><kbd>j</kbd> / <kbd>k</kbd></dt><dd>növbəti / əvvəlki alert</dd>
+      <dt><kbd>a</kbd></dt><dd>Approve: sistemin verdict-ini təsdiqlə</dd>
+      <dt><kbd>r</kbd></dt><dd>Reject: düzgün verdict-i seç</dd>
+      <dt><kbd>o</kbd></dt><dd>case-i TheHive-da aç</dd>
+      <dt><kbd>/</kbd></dt><dd>axtarışa keç</dd>
+      <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Alerts / System / Rules</dd>
+      <dt><kbd>Esc</kbd></dt><dd>bağla</dd>
+    </dl>
+    <button type="button" class="btn" id="helpClose">Bağla</button>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" hidden></div>
 </body>
 </html>
