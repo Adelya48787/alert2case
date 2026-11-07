@@ -17,8 +17,9 @@ STATIC = Path("app/panel/static")
 def client(monkeypatch):
     calls = {}
 
-    async def fake_list(view, limit):
+    async def fake_list(view, limit, filters=None):
         calls["list"] = (view, limit)
+        calls["filters"] = filters
         return [{"alert_id": "a1", "priority": "P1", "verdict": "malicious", "title": "hxxp://bad[.]example"}]
 
     async def fake_stats():
@@ -50,6 +51,43 @@ def test_list_and_stats(client):
 
 def test_unknown_view_rejected(client):
     assert client.get("/api/panel/alerts?view=drop", headers=ADMIN).status_code == 400
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["priority=P9", "alert_type=x';drop table alerts;--", "verdict=evil", "q=" + "a" * 101],
+)
+def test_bad_filters_rejected(client, query):
+    """Filtr dəyərləri bağlı siyahıdan kənara çıxa bilməz, axtarış mətni 100 simvolla məhduddur."""
+    assert client.get(f"/api/panel/alerts?{query}", headers=ADMIN).status_code in (400, 422)
+
+
+def test_filters_passed_through(client):
+    r = client.get(
+        "/api/panel/alerts?priority=P1&alert_type=suspicious_url&verdict=malicious&q=duckdns",
+        headers=ADMIN,
+    )
+    assert r.status_code == 200
+    assert client.calls["filters"] == {
+        "priority": "P1",
+        "alert_type": "suspicious_url",
+        "verdict": "malicious",
+        "q": "duckdns",
+    }
+
+
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (None, None),
+        ("   ", None),
+        ("hxxps://bad[.]example", "%https://bad.example%"),
+        ("50%_off\\", "%50\\%\\_off\\\\%"),
+    ],
+)
+def test_search_pattern_refangs_and_escapes(q, expected):
+    """Analitik defang formanı yapışdıra bilər; LIKE simvolları literal axtarılır."""
+    assert queries.search_pattern(q) == expected
 
 
 def test_missing_alert_404(client):

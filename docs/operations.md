@@ -42,6 +42,8 @@ Grafana (<http://localhost:3000>, `make up-obs`): DLQ dərinliyi, mərhələ vax
 
 Brauzerdə <http://localhost:8000/panel/> açın, admin token-i və adınızı yazın. Token yalnız həmin sekmədə saxlanılır.
 
+Yuxarıda dashboard var: açıq case-lər və P1 sayı, son 24 saatda gələn alert-lər, qəbul → case vaxtının median və p90 dəyəri, analitiklə razılaşma, saatlıq qrafik, prioritet və qərar paylanması. "Live" açıq olanda hər 30 saniyədən bir yenilənir. Siyahını prioritet, alert tipi və sistemin qərarı ilə süzmək olar. Axtarış IOC, host, istifadəçi və qayda adında işləyir, defang formanı (`hxxp`, `[.]`) da qəbul edir. Alert-in detalında bunlar var: qərarın səbəbləri, hər intel mənbəyi üçün kart (status, skor, cache), mərhələ-mərhələ vaxt zolağı, son 7 gündə eyni IOC, host və ya istifadəçi ilə gələn əlaqəli alert-lər.
+
 | Simptom | Səbəb | Həll |
 |---|---|---|
 | "Token qəbul olunmadı" | Token səhvdir və ya rotasiya olunub | `.env`-dəki `ADMIN_TOKEN` |

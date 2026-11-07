@@ -3,38 +3,72 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>alert2case · analitik paneli</title>
+<meta name="color-scheme" content="dark">
+<title>alert2case · analyst panel</title>
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
 </head>
 <body>
 <header class="top">
-  <b class="brand">alert2case <span>/ panel</span></b>
-  <div class="stats" id="stats" aria-live="polite"></div>
+  <b class="brand">alert<span class="two">2</span>case <span class="sub">analyst panel</span></b>
+  <div class="live" id="liveBox">
+    <label class="switch"><input type="checkbox" id="auto" checked> <span>Live</span></label>
+    <span class="muted small" id="updated"></span>
+  </div>
   <span class="who" id="who"></span>
-  <button type="button" id="refresh" class="btn">Yenilə</button>
-  <button type="button" id="logout" class="btn ghost">Çıxış</button>
+  <button type="button" id="refresh" class="btn">Refresh</button>
+  <button type="button" id="logout" class="btn ghost">Logout</button>
 </header>
 
 <section id="login" class="login" hidden>
   <form id="loginForm" class="card">
-    <h1>Analitik paneli</h1>
+    <b class="brand big">alert<span class="two">2</span>case</b>
+    <h1>Analyst panel</h1>
     <p class="muted">Admin token yalnız bu brauzer sekməsində saxlanılır və sekmə bağlananda silinir.</p>
     <label for="token">Admin token</label>
     <input id="token" type="password" autocomplete="off" required>
-    <label for="analyst">Analitik adı</label>
+    <label for="analyst">Analyst</label>
     <input id="analyst" type="text" maxlength="40" placeholder="məs. analyst-1" required>
-    <button type="submit" class="btn primary">Daxil ol</button>
+    <button type="submit" class="btn primary">Login</button>
     <p class="err" id="loginErr" role="alert"></p>
   </form>
 </section>
 
 <main id="app" class="app" hidden>
-  <nav class="tabs" role="tablist">
-    <button type="button" role="tab" data-view="open" aria-selected="true">Açıq</button>
-    <button type="button" role="tab" data-view="reviewed" aria-selected="false">Baxılıb</button>
-    <button type="button" role="tab" data-view="all" aria-selected="false">Hamısı</button>
-  </nav>
+  <section class="dash" aria-label="Ümumi vəziyyət">
+    <div class="kpis" id="kpis"></div>
+    <div class="charts">
+      <figure class="chart wide"><figcaption lang="en">Alerts per hour · last 24h</figcaption><div id="chHourly"></div></figure>
+      <figure class="chart"><figcaption lang="en">Open cases by priority</figcaption><div id="chPriority"></div></figure>
+      <figure class="chart"><figcaption lang="en">Verdicts</figcaption><div id="chVerdict"></div></figure>
+    </div>
+  </section>
+
+  <section class="toolbar" aria-label="Filtr">
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-view="open" aria-selected="true">Open</button>
+      <button type="button" role="tab" data-view="reviewed" aria-selected="false">Reviewed</button>
+      <button type="button" role="tab" data-view="all" aria-selected="false">All</button>
+    </nav>
+    <input id="q" type="search" placeholder="Search: IOC, host, user, rule…" aria-label="Axtarış" maxlength="100">
+    <select id="fPriority" aria-label="Prioritet">
+      <option value="">All priorities</option><option>P1</option><option>P2</option><option>P3</option><option>P4</option>
+    </select>
+    <select id="fType" aria-label="Alert tipi">
+      <option value="">All types</option>
+      <option value="malicious_hash">hash</option>
+      <option value="suspicious_url">url</option>
+      <option value="suspicious_login">login</option>
+    </select>
+    <select id="fVerdict" aria-label="Sistemin qərarı">
+      <option value="">All verdicts</option>
+      <option value="malicious">malicious</option><option value="suspicious">suspicious</option>
+      <option value="unknown">unknown</option><option value="clean">clean</option>
+    </select>
+    <button type="button" id="clear" class="btn ghost">Reset</button>
+    <span class="muted small" id="count"></span>
+  </section>
+
   <div class="split">
     <div class="list" id="list" aria-label="Alert-lər"></div>
     <article class="detail" id="detail" aria-live="polite">

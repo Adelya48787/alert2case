@@ -28,10 +28,25 @@ def build_router(require_admin) -> APIRouter:
     r = APIRouter(prefix="/api/panel", dependencies=[Depends(require_admin)], tags=["panel"])
 
     @r.get("/alerts")
-    async def alerts(view: str = Query("open"), limit: int = Query(100, ge=1, le=500)):
-        if view not in queries.VIEWS:
-            raise HTTPException(status_code=400, detail=f"view: {', '.join(sorted(queries.VIEWS))}")
-        return await queries.list_alerts(view, limit)
+    async def alerts(
+        view: str = Query("open"),
+        limit: int = Query(100, ge=1, le=500),
+        priority: str | None = Query(None),
+        alert_type: str | None = Query(None),
+        verdict: str | None = Query(None),
+        q: str | None = Query(None, max_length=100),
+    ):
+        # Filtr dəyərləri bağlı siyahılardan yoxlanılır; axtarış mətni yalnız parametr kimi ötürülür
+        for name, value, allowed in (
+            ("view", view, queries.VIEWS),
+            ("priority", priority, queries.PRIORITIES),
+            ("alert_type", alert_type, queries.TYPES),
+            ("verdict", verdict, queries.VERDICTS),
+        ):
+            if value is not None and value not in allowed:
+                raise HTTPException(status_code=400, detail=f"{name}: {', '.join(sorted(allowed))}")
+        filters = {"priority": priority, "alert_type": alert_type, "verdict": verdict, "q": q}
+        return await queries.list_alerts(view, limit, filters)
 
     @r.get("/alerts/{alert_id}")
     async def alert(alert_id: UUID):
