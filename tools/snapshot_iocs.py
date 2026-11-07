@@ -65,11 +65,14 @@ def detect_type(ioc: str) -> str:
 
 
 def http_get(url: str, headers: dict[str, str]) -> tuple[int, object]:
+    # urlopen file:// və başqa sxemləri də açır: yalnız https-ə icazə veririk (bandit B310)
+    if urllib.parse.urlsplit(url).scheme != "https":
+        raise ValueError(f"yalnız https: {url[:40]!r}")
     req = urllib.request.Request(
         url, headers={**headers, "Accept": "application/json", "User-Agent": "alert2case-snapshot"}
     )
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:  # nosec B310: sxem yuxarıda yoxlanılır
             status, body = r.status, r.read()
     except urllib.error.HTTPError as e:
         status, body = e.code, e.read()
