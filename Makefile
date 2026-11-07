@@ -13,6 +13,13 @@ reset:     ## DİQQƏT: bütün məlumatı silir
 	docker compose --profile thehive --profile obs down -v
 doctor:
 	tools/doctor.sh
+.PHONY: reset-keep-cache
+reset-keep-cache: ## alert/case/audit, korrelyasiya və bildiriş açarları silinir, intel cache qalır (6.2 warm)
+	docker compose exec -T postgres psql -U soc -d alert2case -c "TRUNCATE alerts, audit_log CASCADE"
+	docker compose exec -T redis sh -c "redis-cli --scan --pattern 'corr:*' | xargs -r redis-cli del"
+	docker compose exec -T redis sh -c "redis-cli --scan --pattern 'notify:*' | xargs -r redis-cli del"
+	docker compose exec -T redis redis-cli del alerts.dlq cases.dlq
+	docker compose exec -T worker sh -c 'rm -rf /code/var/cases /app/var/cases'
 
 simulate:   ## 36 alert-i API-yə göndər
 	python tools/simulator.py --rate 2
