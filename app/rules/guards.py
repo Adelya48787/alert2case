@@ -1,10 +1,70 @@
-"""Auto-close qoruyucuları: qayda "bağla" desə də, təhlükəsizlik şərtləri ödənməlidir (ADR-0002)."""
+"""Auto-close qoruyucuları: qayda "bağla" desə də, təhlükəsizlik şərtləri ödənməlidir (ADR-0002, ADR-0003)."""
+
+from urllib.parse import urlsplit
 
 from app.config import settings
+from app.normalize.iocs import refang
 from app.rules.engine import priority_for
 from app.schemas.alert import Decision, NormalizedAlert, Severity
 
 MIN_CONFIDENCE = 0.67
+
+# ADR-0003: dynamic DNS provayderləri. Bu domenlərin alt domenini hər kəs pulsuz və dəqiqələr içində yaradır.
+# Yeni alt domeni VT-yə skan etdirmək onu "0/93 təmiz" göstərir: bu, təmizliyin sübutu deyil.
+DYNAMIC_DNS = (
+    "duckdns.org",
+    "ddns.net",
+    "hopto.org",
+    "zapto.org",
+    "sytes.net",
+    "no-ip.org",
+    "no-ip.biz",
+    "no-ip.info",
+    "noip.me",
+    "myftp.org",
+    "myftp.biz",
+    "serveftp.com",
+    "servebeer.com",
+    "servehttp.com",
+    "redirectme.net",
+    "bounceme.net",
+    "3utilities.com",
+    "ddns.me",
+    "dynu.net",
+    "dynu.com",
+    "freeddns.org",
+    "ddnsfree.com",
+    "dyndns.org",
+    "dynalias.com",
+    "homeip.net",
+    "gotdns.ch",
+    "mooo.com",
+    "chickenkiller.com",
+    "us.to",
+    "afraid.org",
+    "linkpc.net",
+)
+
+
+def _host(obs_type: str, value: str) -> str | None:
+    if obs_type == "domain":
+        return refang(value).strip().lower().rstrip(".")
+    if obs_type == "url":
+        try:
+            return (urlsplit(refang(value)).hostname or "").rstrip(".") or None
+        except ValueError:
+            return None
+    return None
+
+
+def dynamic_dns_hosts(alert: NormalizedAlert) -> list[str]:
+    """Alert-in dynamic DNS provayderinə aid host-ları (URL və domain observable-larından)."""
+    out = []
+    for o in alert.observables:
+        h = _host(o.type, o.value)
+        if h and any(h == s or h.endswith("." + s) for s in DYNAMIC_DNS) and h not in out:
+            out.append(h)
+    return out
 
 
 def blockers(alert: NormalizedAlert) -> list[str]:
@@ -23,6 +83,9 @@ def blockers(alert: NormalizedAlert) -> list[str]:
         out.append("imtiyazlı/VIP istifadəçi")
     if c.get("asset_criticality") == "crown_jewel":
         out.append("kritik asset (crown_jewel)")
+    ddns = dynamic_dns_hosts(alert)
+    if ddns and not approved:  # ADR-0003: VT-də "0 zərərli" yeni alt domen üçün sübut deyil
+        out.append("dynamic DNS domeni: " + ", ".join(ddns))
     return out
 
 

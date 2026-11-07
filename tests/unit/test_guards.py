@@ -124,3 +124,53 @@ def test_guard_blocks_even_if_rule_file_says_close():
     result = apply_guards(a, decide(a, bad))
     assert result.action == "create_case"
     assert any("malicious" in r for r in result.reasons)
+
+
+# ---- ADR-0003: dynamic DNS guard (6.3-də URL-11/URL-12 FN-i)
+from app.rules.guards import dynamic_dns_hosts  # noqa: E402
+from app.schemas.alert import Observable  # noqa: E402
+
+
+@pytest.mark.parametrize(
+    "obs",
+    [
+        Observable(type="url", value="https://backup-storage.duckdns.org/"),
+        Observable(type="url", value="hxxps://home-iot[.]ddns[.]net/api/v1"),
+        Observable(type="url", value="https://camera-office.hopto.org/"),
+        Observable(type="domain", value="Backup-Storage.DuckDNS.org."),
+        Observable(type="domain", value="a.b.no-ip.biz"),
+    ],
+)
+def test_dynamic_dns_blocks_auto_close(obs):
+    alert = make(alert_type="suspicious_url", ioc=obs)
+    decision = decide(alert)
+    assert decision.action == "auto_close"  # qayda (R07-CLEAN) bağlayardı
+
+    result = apply_guards(alert, decision)
+
+    assert result.action == "create_case"
+    assert any("dynamic DNS" in r for r in result.reasons)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "https://x.example/a",
+        "https://notduckdns.org/",  # suffix-in özü deyil, sadəcə oxşar ad
+        "https://duckdns.org.evil.example/",
+    ],
+)
+def test_ordinary_domains_not_flagged(value):
+    alert = make(alert_type="suspicious_url", ioc=Observable(type="url", value=value))
+    assert dynamic_dns_hosts(alert) == []
+    assert apply_guards(alert, decide(alert)).action == "auto_close"
+
+
+def test_dynamic_dns_allowlisted_by_human_can_close():
+    ctx = {"asset_criticality": "medium", "user_privileged": False, "user_vip": False, "allowlisted": True}
+    alert = make(
+        alert_type="suspicious_url", ioc=Observable(type="url", value="https://office.duckdns.org/"), ctx=ctx
+    )
+    assert (
+        apply_guards(alert, decide(alert).model_copy(update={"action": "auto_close"})).action == "auto_close"
+    )
