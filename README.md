@@ -33,6 +33,7 @@ Nəticəyə harada baxmaq olar:
 |---|---|
 | Case-lər | `var/cases/*.json` (`CASE_BACKEND=file`) və ya TheHive (`make up-full`, `CASE_BACKEND=thehive`) |
 | Bildirişlər | Mailpit: <http://localhost:8025>, Slack / Telegram (`.env`-də verilibsə) |
+| Analitik paneli: açıq case-lər, tarixçə, təsdiqlə / rədd et | <http://localhost:8000/panel/> (admin token ilə) |
 | Bir alert-in tarixçəsi | `curl -H "X-Admin-Token: …" localhost:8000/alerts/<alert_id>/timeline` |
 | Metrikalar | `make up-obs` → Grafana <http://localhost:3000> |
 

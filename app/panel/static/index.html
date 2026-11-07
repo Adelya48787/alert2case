@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>alert2case · analitik paneli</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <b class="brand">alert2case <span>/ panel</span></b>
+  <div class="stats" id="stats" aria-live="polite"></div>
+  <span class="who" id="who"></span>
+  <button type="button" id="refresh" class="btn">Yenilə</button>
+  <button type="button" id="logout" class="btn ghost">Çıxış</button>
+</header>
+
+<section id="login" class="login" hidden>
+  <form id="loginForm" class="card">
+    <h1>Analitik paneli</h1>
+    <p class="muted">Admin token yalnız bu brauzer sekməsində saxlanılır və sekmə bağlananda silinir.</p>
+    <label for="token">Admin token</label>
+    <input id="token" type="password" autocomplete="off" required>
+    <label for="analyst">Analitik adı</label>
+    <input id="analyst" type="text" maxlength="40" placeholder="məs. analyst-1" required>
+    <button type="submit" class="btn primary">Daxil ol</button>
+    <p class="err" id="loginErr" role="alert"></p>
+  </form>
+</section>
+
+<main id="app" class="app" hidden>
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" data-view="open" aria-selected="true">Açıq</button>
+    <button type="button" role="tab" data-view="reviewed" aria-selected="false">Baxılıb</button>
+    <button type="button" role="tab" data-view="all" aria-selected="false">Hamısı</button>
+  </nav>
+  <div class="split">
+    <div class="list" id="list" aria-label="Alert-lər"></div>
+    <article class="detail" id="detail" aria-live="polite">
+      <p class="muted empty">Soldan alert seçin.</p>
+    </article>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

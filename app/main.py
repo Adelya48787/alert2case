@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from app import db, pipeline, queue
 from app.config import settings
 from app.feedback.collector import FeedbackIn, from_thehive, record
+from app.panel import router as panel
 from app.stages import build_router
 
 app = FastAPI(title="alert2case")
@@ -101,3 +102,8 @@ async def feedback_thehive(
         raise HTTPException(status_code=403, detail="forbidden")
     fb = await from_thehive(body)
     return await record(fb) if fb else {"ignored": True}
+
+
+# ---------- Analitik paneli ----------
+app.include_router(panel.build_router(require_admin))
+panel.mount(app)

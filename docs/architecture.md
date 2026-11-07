@@ -20,6 +20,7 @@ flowchart LR
   N8N[n8n] -- /stage/* --> API
   TH -- CaseClosed webhook --> FB[/feedback/thehive/]
   FB --> PG
+  UI[Analitik paneli /panel] -- /api/panel/*, /feedback --> API
   PG --> TUNER[tuner + replay] -. PR .-> RULES[rules/*.yaml]
   PROM[Prometheus] --> GRAF[Grafana]
 ```
@@ -67,6 +68,8 @@ Prioritet severity və kontekstdən hesablanır: kritik (severity 5) və ya yük
 **Audit** (`app/audit/`). Hər mərhələ `audit_log`-a yazılır. Hər sətir əvvəlki sətrin hash-ını saxlayır (hash zənciri); `UPDATE`/`DELETE` trigger ilə qadağandır. Yoxlama: `python -m tools.verify_audit`. Loglarda secret maskalanır.
 
 **Rəy dövrəsi** (`app/feedback/`, `tools/tuner.py`, `tools/replay.py`). TheHive-da case bağlananda `CaseClosed` webhook-u `/feedback/thehive`-a gəlir (Bearer token) və analitikin verdict-i `feedback` cədvəlinə yazılır. Tuner rəylərdən qayda/çəki təklifi hazırlayır, replay təklifi keçmiş alert-lər üzərində sınayır (safety gate: FN artmamalıdır). Təklif ayrıca branch-a commit olunur, production-u yalnız insanın merge etdiyi PR dəyişir.
+
+**Analitik paneli** (`app/panel/`). `/panel/` brauzer səhifəsi (HTML, CSS, JS; kitabxana və build addımı yoxdur) və `/api/panel/*` oxuma API-si (admin token). Açıq alert-ləri, sistemin qərarını və səbəblərini, intel nəticələrini (IOC-lar defang), tarixçəni göstərir; "Təsdiqlə" və "Rədd et" düymələri mövcud `POST /feedback` endpoint-i ilə rəy yazır, yəni tuner və replay panel rəylərini TheHive rəyləri kimi görür. Səhifə sərt CSP ilə verilir (yalnız öz fayllarını yükləyir), alert mətni yalnız `textContent` ilə yazılır, token yalnız brauzer sekməsində saxlanılır.
 
 **n8n** (`n8n/`). Pipeline-ın vizual variantı: eyni mərhələləri `/stage/{normalize,enrich,decide,act,notify}` endpoint-ləri ilə çağırır. Xəta workflow-u Mailpit-ə email göndərir. Əsas yol worker-dir; n8n demo və alternativ orkestrasiya üçündür (ADR-0001).
 
@@ -123,6 +126,7 @@ app/
   case/            TheHive və fayl backend-i, defang
   notify/          Slack, Telegram, email, throttle
   feedback/        TheHive webhook, rəy
+  panel/           analitik paneli: /api/panel/* və statik səhifə
   audit/           hash zənciri, log maskası, metrikalar
 rules/             severity.yaml, weights.yaml, correlation.yaml
 context/           assets.csv, identities.csv, allowlist.yaml

@@ -36,6 +36,20 @@ docker compose exec -T redis redis-cli XPENDING alerts.in pipeline   # emalda ol
 
 Grafana (<http://localhost:3000>, `make up-obs`): DLQ dərinliyi, mərhələ vaxtları, intel nəticələri, qəbul → hərəkət vaxtı.
 
+## Analitik paneli
+
+**Simptom:** analitik case-ləri nəzərdən keçirməli və ya sistemin "bağlayardım" qərarlarını yoxlamalıdır.
+
+Brauzerdə <http://localhost:8000/panel/> açın, admin token-i və adınızı yazın. Token yalnız həmin sekmədə saxlanılır.
+
+| Simptom | Səbəb | Həll |
+|---|---|---|
+| "Token qəbul olunmadı" | Token səhvdir və ya rotasiya olunub | `.env`-dəki `ADMIN_TOKEN` |
+| Siyahı boşdur | Bütün alert-lərə rəy verilib və ya alert yoxdur | "Hamısı" tabı; `make simulate` |
+| Səhifə açılır, amma düymələr işləmir | Brauzer köhnə JS-i cache-dən götürür | `Ctrl+Shift+R` |
+
+Panel rəyi `feedback` cədvəlinə `source=manual` ilə yazılır və audit-ə düşür: `python -m tools.tuner` onu nəzərə alır.
+
 ## Auto-close-u dərhal dayandırmaq (kill switch)
 
 **Simptom:** sistem bağlamamalı olduğu alert-i bağlayıb və ya bağlamaya şübhə var.

@@ -177,3 +177,25 @@ async def test_dlq_empty_and_audit_chain_intact(pg, run):
         )
         assert row["row_hash"] == expected, f"sətir dəyişdirilib: id={row['id']}"
         prev = row["row_hash"]
+
+
+async def test_panel_lists_and_records_feedback(pg, run):
+    """Analitik paneli: alert siyahıda görünür, IOC-lar defang olunub, rəy yazılır və audit-ə düşür."""
+    rows = await wait_done(pg, run)
+    h = {"X-Admin-Token": ADMIN}
+    r = httpx.get(f"{API}/api/panel/alerts", params={"view": "all", "limit": 500}, headers=h, timeout=10)
+    assert r.status_code == 200
+    listed = {a["alert_id"] for a in r.json()}
+    assert {str(x["alert_id"]) for x in rows} <= listed
+    url_id = next(x["alert_id"] for x in rows if x["source_ref"] == "URL-01")
+    d = httpx.get(f"{API}/api/panel/alerts/{url_id}", headers=h, timeout=10).json()
+    urls = [o["value"] for o in d["observables"] if o["type"] in ("url", "domain")]
+    assert urls and all(not v.startswith(("http://", "https://")) and "[.]" in v for v in urls), (
+        "IOC defang olunmayıb"
+    )
+    fb = {"alert_id": str(url_id), "human_verdict": "suspicious", "analyst": "e2e", "source": "manual"}
+    assert httpx.post(f"{API}/feedback", json=fb, headers=h, timeout=10).json().get("saved") is True
+    n = await pg.fetchval(
+        "SELECT count(*) FROM audit_log WHERE correlation_id = $1 AND stage = 'feedback'", url_id
+    )
+    assert n >= 1
